@@ -1,5 +1,7 @@
 // SharixMediator module implementation.
 
+package Mediator;
+
 import SharixInterface.GUIMediator;
 import SharixInterface.NetworkMediator;
 import SharixInterface.WebServiceClientMediator;
@@ -10,7 +12,7 @@ import SharixInterface.User;
 import java.lang.*;
 import java.util.*;
 
-class SharixMediator implements NetworkMediator, GUIMediator, WebServiceClientMediator {
+public class SharixMediator implements NetworkMediator, GUIMediator, WebServiceClientMediator {
   Network network;
   GUI gui;
   WebServiceClient webServiceClient;
