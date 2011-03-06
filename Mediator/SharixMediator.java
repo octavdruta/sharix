@@ -1,22 +1,32 @@
 // SharixMediator module implementation.
 
-class SharixMediator implements SharixNetwork, SharixGUI, SharixWebServiceClient {
+import SharixInterface.GUIMediator;
+import SharixInterface.NetworkMediator;
+import SharixInterface.WebServiceClientMediator;
+import SharixInterface.Network;
+import SharixInterface.GUI;
+import SharixInterface.WebServiceClient;
+import SharixInterface.User;
+import java.lang.*;
+import java.util.*;
+
+class SharixMediator implements NetworkMediator, GUIMediator, WebServiceClientMediator {
   Network network;
   GUI gui;
   WebServiceClient webServiceClient;
 
   // Registeres network component to mediator.
-  public void registerNetwork(SharixNetwork network) {
+  public void registerNetwork(Network network) {
     this.network = network;
   }
 
   // Registers GUI component to mediator.
-  public void registerGUI(SharixGUI gui) {
+  public void registerGUI(GUI gui) {
     this.gui = gui;
   }
 
   // Registers WebServiceClient to mediator.
-  public void registerWebServiceClient(SharixWebServiceClient client) {
+  public void registerWebServiceClient(WebServiceClient client) {
     webServiceClient = client;
   }
 
@@ -51,8 +61,9 @@ class SharixMediator implements SharixNetwork, SharixGUI, SharixWebServiceClient
 
   // Initializes fname file download.
   public boolean downloadFile(String fromUser, String fname) {
-    if (!network.connectedToUSer(user))
-      network.connect(fromUser);
+    if (!network.isUserConnected(fromUser))
+      network.connectToUser(fromUser);
+	return true;
   }
 
   // Initializes fname file upload.
