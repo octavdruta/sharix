@@ -1,0 +1,21 @@
+IDP - Tema 0
+
+Echipa: Roboti
+Componenta: Andrei Soare
+            Vlad Berteanu
+Grupa: 341C3
+
+Repository:
+
+- codul proiectului se poate obtine prin clonarea :
+
+    http://gitorious.org/sharix/sharix.git
+
+
+Descriere arhitectura:
+
+- s-a construit un pachet java ce cuprinde toate interfetele descrise
+pentru fiecare componenta in parte.
+
+- s-a realizat o implementare minimala pentru fiecare modul pentru a
+ilustra modul in care acestea vor comunica intre ele.
