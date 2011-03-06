@@ -1,5 +1,11 @@
 // Graphical User Interface Mediator.
 
+package SharixInterface;
+
+import java.lang.Integer
+import java.lang.String;
+import java.util.Vector;
+
 public interface GUIMediator {
   // Adds a new user and its corresponding list of shared files.
   public boolean addUser(String name, Vector<String> fileList);
@@ -17,4 +23,3 @@ public interface GUIMediator {
   public void updateTransfer(String fromUser, String toUser, String file,
                              String status, Integer progress);
 };
-
