@@ -1,5 +1,11 @@
 // WebServiceClient Interface.
 
+package SharixInterface;
+
+import java.lang.Integer
+import java.lang.String;
+import java.util.Vector;
+
 public interface WebServiceClient {
   // Connects to filesharing server identified by address and port.
   public boolean connectToServer(String address, Integer port);

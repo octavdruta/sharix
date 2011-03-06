@@ -1,5 +1,9 @@
 // Network interface mediator.
 
+package SharixInterface;
+
+import java.lang.String;
+
 public interface NetworkMediator {
   // Initializes fname file download.
   public boolean downloadFile(String fromUser, String fname);

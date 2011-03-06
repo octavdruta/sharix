@@ -1,5 +1,9 @@
 // Network module interface.
 
+package SharixInterface;
+
+import java.lang.String;
+
 public interface Network {
   // Connects to user identified by username.
   public boolean connectToUser(String name);

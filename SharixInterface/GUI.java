@@ -1,5 +1,11 @@
 // Graphical User Interface.
 
+package SharixInterface;
+
+import java.lang.Integer
+import java.lang.String;
+import java.util.Vector;
+
 public interface GUI {
   // Adds a new user and its corresponding list of shared files.
   public boolean addUser(String name, Vector<String> fileList);
