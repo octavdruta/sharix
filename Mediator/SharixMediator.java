@@ -6,17 +6,17 @@ class SharixMediator implements SharixNetwork, SharixGUI, SharixWebServiceClient
   WebServiceClient webServiceClient;
 
   // Registeres network component to mediator.
-  public registerNetwork(SharixNetwork network) {
+  public void registerNetwork(SharixNetwork network) {
     this.network = network;
   }
 
   // Registers GUI component to mediator.
-  public registerGUI(SharixGUI gui) {
+  public void registerGUI(SharixGUI gui) {
     this.gui = gui;
   }
 
   // Registers WebServiceClient to mediator.
-  public registerWebServiceClient(SharixWebServiceClient client) {
+  public void registerWebServiceClient(SharixWebServiceClient client) {
     webServiceClient = client;
   }
 

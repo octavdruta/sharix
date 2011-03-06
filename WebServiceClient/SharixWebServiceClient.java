@@ -1,6 +1,6 @@
 // WebServiceClient module implementation.
 
-class SharixWebServiceClient implementes WebServiceClient {
+class SharixWebServiceClient implements WebServiceClient {
   // Connects to filesharing server identified by address and port.
   public boolean connectToServer(String address, Integer port) {
     return true;

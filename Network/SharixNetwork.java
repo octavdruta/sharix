@@ -1,6 +1,7 @@
 // Network module implementation.
 
 import java.util.HashMap;
+import SharixInterface.Network;
 
 class Socket {
 	int phony;

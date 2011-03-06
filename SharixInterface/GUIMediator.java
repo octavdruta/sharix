@@ -2,7 +2,7 @@
 
 package SharixInterface;
 
-import java.lang.Integer
+import java.lang.Integer;
 import java.lang.String;
 import java.util.Vector;
 
