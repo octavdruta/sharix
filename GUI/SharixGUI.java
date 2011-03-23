@@ -89,8 +89,7 @@ public class SharixGUI extends JPanel implements GUI  {
         if (name == selectedUser) {
             filesModel.clear();
         }
-        // TODO: check if there was any transfer between him and you and
-        // set all "Reveiving..." transfers to "Aborted".
+		activityPanel.abortTrafficActivity(name);
         return true;
     }
 
@@ -129,7 +128,9 @@ public class SharixGUI extends JPanel implements GUI  {
             if (progress == 100) {
                 status = "Completed.";
             }
-            updateTransfer(src, dst, file, status, progress);
+			if (!status.equals("Aborted") && !status.equals("Completed.")) {
+	            updateTransfer(src, dst, file, status, progress);
+			}
         }
     }
 

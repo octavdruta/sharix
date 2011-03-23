@@ -137,6 +137,19 @@ public class TrafficActivity extends JPanel {
         addTrafficActivity(source, dest, filename, status, progress);
     }
 
+	public void abortTrafficActivity(String user) {
+		for (int row = 0; row < tableModel.getRowCount(); ++row) {
+			if (tableModel.getSource(row).equals(user) ||
+				tableModel.getDestination(row).equals(user)) {
+				updateTrafficActivity(tableModel.getSource(row),
+									  tableModel.getDestination(row),
+									  tableModel.getFilename(row),
+									  "Aborted",
+									  tableModel.getProgress(row));
+			}
+		}
+	}
+
     SharixTableModel getActivities() {
         return tableModel;
     }

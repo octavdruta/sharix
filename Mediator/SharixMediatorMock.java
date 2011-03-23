@@ -46,7 +46,6 @@ public class SharixMediatorMock {
                 try {
                     Thread.sleep(1000);
                 } catch(InterruptedException e) { }
-                System.out.println("Update transfers");
                 gui.randomUpdateTransfers();
                 int val = rnd.nextInt(9);
                 if (val == 0 && !removeUser) {
