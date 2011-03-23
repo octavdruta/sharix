@@ -90,29 +90,27 @@ public class TrafficActivity extends JPanel {
         trafficTable.setFillsViewportHeight(true);
         JScrollPane scrollPane = new JScrollPane(trafficTable);
         add(scrollPane);
-		// Demo.
-		addTrafficActivity("Vlad", "Andrei", "file.txt", "sending");
     }
     
     // Adds new activity to the traffic table.
     void addTrafficActivity(String source, String dest,
-                            String filename, String status) {
+                            String filename, String status, Integer progress) {
         JProgressBar progressBar = new JProgressBar(0, 100);
-        progressBar.setValue(0);
+        progressBar.setValue(progress);
         progressBar.setStringPainted(true);
         Object[] rowData = {source, dest, filename, progressBar, status};
         tableModel.addRow(rowData);
     }
     
     // Updates an activity from traffic table.
-    void updateTrafficActivity(String source, String dest,
+    public void updateTrafficActivity(String source, String dest,
                                String filename,  String status,
                                Integer progress) {
         for (int row = 0; row < trafficTable.getRowCount(); ++row) {
-            if (tableModel.getSource(row) == source &&
-                tableModel.getDestination(row) == dest &&
-                tableModel.getFilename(row) == filename) {
-                if (status != null) 
+            if (tableModel.getSource(row).equals(source) &&
+                tableModel.getDestination(row).equals(dest) &&
+                tableModel.getFilename(row).equals(filename)) {
+                if (status != null)
                     tableModel.setStatus(row, status);
                 if (progress != null) {
                     JProgressBar progressBar = new JProgressBar(0, 100);
@@ -120,7 +118,9 @@ public class TrafficActivity extends JPanel {
                     progressBar.setStringPainted(true);
                     tableModel.setProgress(row, progressBar);
                 }
+                return;
             }
         }
+        addTrafficActivity(source, dest, filename, status, progress);
     }
 }
