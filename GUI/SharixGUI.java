@@ -23,9 +23,11 @@ public class SharixGUI extends JPanel implements GUI  {
     private JList fileList;
     final int VERTICAL_SPLIT_POINT = 400;
     final int HORIZONTAL_SPLIT_POINT = 600;
-    String selectedUser;
+    private String selectedUser;
+    private String myself;
 
-    public SharixGUI() {
+    public SharixGUI(String myName) {
+        this.myself = myName;
         init();
     }
 
@@ -33,6 +35,16 @@ public class SharixGUI extends JPanel implements GUI  {
         setLayout(new BorderLayout());
 
         fileList = new JList(filesModel);
+        fileList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                String s = (String)fileList.getSelectedValue();
+                if (s != null) {
+                    updateTransfer(selectedUser, myself, s, "Receiving...",
+                                   new Integer(0));
+                }
+            }
+        });
+
         userList = new JList(usersModel);
         userList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -77,6 +89,8 @@ public class SharixGUI extends JPanel implements GUI  {
         if (name == selectedUser) {
             filesModel.clear();
         }
+        // TODO: check if there was any transfer between him and you and
+        // set all "Reveiving..." transfers to "Aborted".
         return true;
     }
 
@@ -99,6 +113,24 @@ public class SharixGUI extends JPanel implements GUI  {
     public void updateTransfer(String fromUser, String toUser,
                                String file, String status, Integer progress) {
         activityPanel.updateTrafficActivity(fromUser, toUser, file, status, progress);
+    }
+
+    public void randomUpdateTransfers() {
+        SharixTableModel tableModel = activityPanel.getActivities();
+        Random rnd = new Random();
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String src = tableModel.getSource(i);
+            String dst = tableModel.getDestination(i);
+            String file = tableModel.getFilename(i);
+            String status = tableModel.getStatus(i);
+            int progress = tableModel.getProgress(i);
+            int val = rnd.nextInt(10);
+            progress += val % (101 - progress);
+            if (progress == 100) {
+                status = "Completed.";
+            }
+            updateTransfer(src, dst, file, status, progress);
+        }
     }
 
     public void buildGUI() {

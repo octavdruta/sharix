@@ -15,6 +15,8 @@ import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import java.util.Vector;
+
 
 // Table model used to store traffic activity data.
 class SharixTableModel extends DefaultTableModel {
@@ -49,11 +51,24 @@ class SharixTableModel extends DefaultTableModel {
     public void setStatus(int row, Object status) {
         setValueAt(status, row, 4);
     }
+
+    public String getStatus(int row) {
+        return (String)getValueAt(row, 4);
+    }
     
     // Sets progress for a given row.
     public void setProgress(int row, Object progress) {
         setValueAt(progress, row, 3);
     }
+
+    public int getProgress(int row) {
+        return ((JProgressBar)getValueAt(row, 3)).getValue();
+    }
+
+    public void setProgress(int row, int progress) {
+        ((JProgressBar)getValueAt(row, 4)).setValue(progress);
+    }
+
 }
 
 // Table cell renderer used to display progress bar.
@@ -69,8 +84,6 @@ class ProgressRenderer implements TableCellRenderer {
 
 
 public class TrafficActivity extends JPanel {
-    Object[][] mockData = { { "Andrei", "_me_", "logo.txt", "0", "Receiving" }, 
-                            { "_me_", "Cip", "data.txt", "10", "Sending" } };
     SharixTableModel tableModel = new SharixTableModel();
     ProgressRenderer progressRenderer = new ProgressRenderer();
     JTable trafficTable = new JTable(tableModel) {
@@ -82,7 +95,7 @@ public class TrafficActivity extends JPanel {
                     }
                 }
     };
-        
+
     // Constructor.
     public TrafficActivity() {
         super(new GridLayout(1, 0));
@@ -122,5 +135,9 @@ public class TrafficActivity extends JPanel {
             }
         }
         addTrafficActivity(source, dest, filename, status, progress);
+    }
+
+    SharixTableModel getActivities() {
+        return tableModel;
     }
 }
