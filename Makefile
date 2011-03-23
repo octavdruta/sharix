@@ -1,10 +1,10 @@
 all:
 	javac */*.java
 
-GUI/SharixGUI.class: all
+Mediator/SharixMediatorMock.class: all
 
-run: GUI/SharixGUI.class
-	java GUI/SharixGUI
+run: Mediator/SharixMediatorMock.class
+	java Mediator/SharixMediatorMock
 
 clean:
 	rm -f */*.class
