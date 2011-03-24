@@ -13,7 +13,7 @@ import javax.swing.event.*;
 public class SharixGUI extends JPanel implements GUI  {
     private static final long serialVersionUID = 1L;
     private TreeMap<String, Vector<String>> users =
-        new TreeMap<String, Vector<String>>();;
+            new TreeMap<String, Vector<String>>();;
     private DefaultListModel usersModel = new DefaultListModel();
     private DefaultListModel filesModel = new DefaultListModel();
     private JScrollPane filesPanel;
@@ -26,11 +26,13 @@ public class SharixGUI extends JPanel implements GUI  {
     private String selectedUser;
     private String myself;
 
+    // myName represents the name of the person currently using the program.
     public SharixGUI(String myName) {
         this.myself = myName;
         init();
     }
 
+    // Initializes GUI.
     private void init() {
         setLayout(new BorderLayout());
 
@@ -44,7 +46,6 @@ public class SharixGUI extends JPanel implements GUI  {
                 }
             }
         });
-
         userList = new JList(usersModel);
         userList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -77,22 +78,25 @@ public class SharixGUI extends JPanel implements GUI  {
         add(fullPanel, BorderLayout.CENTER);
     }
 
+    // Adds user to GUI data model.
     public boolean addUser(String name, Vector<String> fileList) {
         users.put(name, fileList);
         usersModel.addElement(name);
         return true;
     }
 
+    // Remves user from GUI data model.
     public boolean removeUser(String name) {
         users.remove(name);
         usersModel.removeElement(name);
         if (name == selectedUser) {
             filesModel.clear();
         }
-		activityPanel.abortTrafficActivity(name);
+        activityPanel.abortTrafficActivity(name);
         return true;
     }
 
+    // Adds new file to user's list.
     public boolean addFileToUser(String user, String file) {
         users.get(user).add(file);
         if (user == selectedUser) {
@@ -101,6 +105,7 @@ public class SharixGUI extends JPanel implements GUI  {
         return true;
     }
 
+    // Removes file from user's list.
     public boolean removeFileFromUser(String user, String file) {
         users.get(user).remove(file);
         if (user == selectedUser) {
@@ -109,11 +114,16 @@ public class SharixGUI extends JPanel implements GUI  {
         return true;
     }
 
+    // Updates currently running transfer activity.
     public void updateTransfer(String fromUser, String toUser,
                                String file, String status, Integer progress) {
         activityPanel.updateTrafficActivity(fromUser, toUser, file, status, progress);
     }
 
+    // Mock used to randomly update current transfer activities.
+    // It requires private information and could not be implemented
+    // in the mediator mock.
+    // (TODO) This method will be deleted in the release version.
     public void randomUpdateTransfers() {
         SharixTableModel tableModel = activityPanel.getActivities();
         Random rnd = new Random();
@@ -123,17 +133,18 @@ public class SharixGUI extends JPanel implements GUI  {
             String file = tableModel.getFilename(i);
             String status = tableModel.getStatus(i);
             int progress = tableModel.getProgress(i);
-            int val = rnd.nextInt(10);
+            int val = rnd.nextInt(8);
             progress += val % (101 - progress);
             if (progress == 100) {
                 status = "Completed.";
             }
-			if (!status.equals("Aborted") && !status.equals("Completed.")) {
-	            updateTransfer(src, dst, file, status, progress);
-			}
+            if (!status.equals("Aborted")) {
+                updateTransfer(src, dst, file, status, progress);
+            }
         }
     }
 
+    // Builds GUI frame.
     public void buildGUI() {
         JFrame frame = new JFrame("Sharix");
         frame.setContentPane(this);

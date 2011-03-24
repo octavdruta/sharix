@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<project name="Sharix" basedir="." default="run">
+
+    <!-- Properties -->
+
+    <property name="src.dir" value="src" />
+    <property name="build.dir" value="build" />
+
+    <!-- Targets -->
+
+    <target name="compile">
+        <mkdir dir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}" />
+    </target>
+
+    <target name="run" depends="compile">
+        <java classname="Mediator/SharixMediatorMock" fork="true">
+            <classpath>
+                <pathelement location="${build.dir}" />
+            </classpath>
+            <arg value="ANT_RULZ" />
+        </java>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}" />
+    </target>
+
+</project>

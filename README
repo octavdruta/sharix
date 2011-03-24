@@ -1,4 +1,4 @@
-IDP - Tema 0
+IDP - Tema 1
 
 Echipa: Roboti
 Componenta: Andrei Soare
@@ -11,11 +11,12 @@ Repository:
 
     http://gitorious.org/sharix/sharix.git
 
+- compilare: ant compile
+- executie: ant run
+- clean: ant clean
 
-Descriere arhitectura:
-
-- s-a construit un pachet java ce cuprinde toate interfetele descrise
-pentru fiecare componenta in parte.
-
-- s-a realizat o implementare minimala pentru fiecare modul pentru a
-ilustra modul in care acestea vor comunica intre ele.
+La incarcarea interfetei se vor loga 3 utilizatori: Andrei, Dan, Ion. Dupa
+aceasta, la un interval random de 1-10 secunde, Andrei va iesi, iar Vlad se va
+loga. La apasarea pe un utilizator se va afisa lista sa de fisiere, iar la
+apasarea pe un fisier se va initia transferul. Daca utilizatorul iese in timpul
+transferului (ex: Andrei), statusul transferului respectiv va deveni "Aborted".

@@ -52,6 +52,7 @@ class SharixTableModel extends DefaultTableModel {
         setValueAt(status, row, 4);
     }
 
+	// Returns status for a given row.
     public String getStatus(int row) {
         return (String)getValueAt(row, 4);
     }
@@ -61,14 +62,15 @@ class SharixTableModel extends DefaultTableModel {
         setValueAt(progress, row, 3);
     }
 
+	// Gets progress bar value for a given row.
     public int getProgress(int row) {
         return ((JProgressBar)getValueAt(row, 3)).getValue();
     }
 
+	// Sets progress bar value for a given row.
     public void setProgress(int row, int progress) {
         ((JProgressBar)getValueAt(row, 4)).setValue(progress);
     }
-
 }
 
 // Table cell renderer used to display progress bar.
@@ -83,6 +85,7 @@ class ProgressRenderer implements TableCellRenderer {
 }
 
 
+// GUI implementation for traffic activity (open connections with other users.)
 public class TrafficActivity extends JPanel {
     SharixTableModel tableModel = new SharixTableModel();
     ProgressRenderer progressRenderer = new ProgressRenderer();
@@ -137,6 +140,7 @@ public class TrafficActivity extends JPanel {
         addTrafficActivity(source, dest, filename, status, progress);
     }
 
+	// Sets all connections involving user as aborted.
 	public void abortTrafficActivity(String user) {
 		for (int row = 0; row < tableModel.getRowCount(); ++row) {
 			if (tableModel.getSource(row).equals(user) ||
@@ -150,6 +154,7 @@ public class TrafficActivity extends JPanel {
 		}
 	}
 
+	// Returns data model for the traffic activity.
     SharixTableModel getActivities() {
         return tableModel;
     }
