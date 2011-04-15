@@ -1,10 +1,9 @@
 // WebServiceClient module implementation.
 
-package WebServiceClient;
+package src.WebServiceClient;
 
-import SharixInterface.WebServiceClient;
-import SharixInterface.User;
-import java.lang.*;
+import src.SharixInterface.WebServiceClient;
+import src.SharixInterface.User;
 import java.util.*;
 
 class SharixWebServiceClient implements WebServiceClient {

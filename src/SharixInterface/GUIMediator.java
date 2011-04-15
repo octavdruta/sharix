@@ -1,6 +1,6 @@
 // Graphical User Interface Mediator.
 
-package SharixInterface;
+package src.SharixInterface;
 
 import java.lang.Integer;
 import java.lang.String;

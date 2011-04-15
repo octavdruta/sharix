@@ -1,9 +1,7 @@
 // WebServiceClient interface mediator.
 
-package SharixInterface;
+package src.SharixInterface;
 
-import java.lang.Integer;
-import java.lang.String;
 import java.util.Vector;
 
 public interface WebServiceClientMediator {

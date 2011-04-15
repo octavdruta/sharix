@@ -1,15 +1,14 @@
 // SharixMediator module implementation.
 
-package Mediator;
+package src.Mediator;
 
-import SharixInterface.GUIMediator;
-import SharixInterface.NetworkMediator;
-import SharixInterface.WebServiceClientMediator;
-import SharixInterface.Network;
-import SharixInterface.GUI;
-import SharixInterface.WebServiceClient;
-import SharixInterface.User;
-import java.lang.*;
+import src.SharixInterface.GUIMediator;
+import src.SharixInterface.NetworkMediator;
+import src.SharixInterface.WebServiceClientMediator;
+import src.SharixInterface.Network;
+import src.SharixInterface.GUI;
+import src.SharixInterface.WebServiceClient;
+import src.SharixInterface.User;
 import java.util.*;
 
 public class SharixMediator implements NetworkMediator, GUIMediator, WebServiceClientMediator {
@@ -33,6 +32,7 @@ public class SharixMediator implements NetworkMediator, GUIMediator, WebServiceC
   }
 
   // Adds a new user and its corresponding list of shared files.
+  @Override
   public boolean addUser(String name, Vector<String> fileList) {
     return true;
   }

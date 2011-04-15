@@ -1,6 +1,6 @@
 // Network interface mediator.
 
-package SharixInterface;
+package src.SharixInterface;
 
 import java.lang.String;
 

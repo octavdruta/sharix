@@ -1,11 +1,10 @@
 // Network module implementation.
 
-package Network;
+package src.Network;
 
 import java.util.HashMap;
-import SharixInterface.*;
-import Mediator.*;
-import java.lang.*;
+import src.SharixInterface.*;
+import src.Mediator.*;
 import java.util.*;
 
 class Socket {

@@ -1,11 +1,10 @@
 // Implementation of SharixGUI module.
 
-package GUI;
+package src.GUI;
 
-import SharixInterface.GUI;
+import src.SharixInterface.GUI;
 
 import java.awt.*;
-import java.lang.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;

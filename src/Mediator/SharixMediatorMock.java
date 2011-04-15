@@ -1,10 +1,8 @@
-package Mediator;
+package src.Mediator;
 
-import GUI.*;
-import java.lang.*;
+import src.GUI.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 public class SharixMediatorMock {
     private SharixGUI gui;

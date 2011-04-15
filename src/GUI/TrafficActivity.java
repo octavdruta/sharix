@@ -1,26 +1,20 @@
-package GUI;
+package src.GUI;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import java.util.Vector;
 
 
 // Table model used to store traffic activity data.
 class SharixTableModel extends DefaultTableModel {
-    final static String[] columnNames = {"Source", "Destination",
+	private static final long serialVersionUID = -8903455469511956368L;
+	final static String[] columnNames = {"Source", "Destination",
                                          "Filename", "Progress", "Status"};
     // Constructor.
     public SharixTableModel() {
@@ -87,10 +81,12 @@ class ProgressRenderer implements TableCellRenderer {
 
 // GUI implementation for traffic activity (open connections with other users.)
 public class TrafficActivity extends JPanel {
-    SharixTableModel tableModel = new SharixTableModel();
+	private static final long serialVersionUID = 2677872434091217070L;
+	SharixTableModel tableModel = new SharixTableModel();
     ProgressRenderer progressRenderer = new ProgressRenderer();
     JTable trafficTable = new JTable(tableModel) {
-                public TableCellRenderer getCellRenderer(int row, int column) {
+		        private static final long serialVersionUID = -3992555039236158443L;
+				public TableCellRenderer getCellRenderer(int row, int column) {
                     if (column == 3) {
                         return progressRenderer;
                     } else {

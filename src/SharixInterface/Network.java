@@ -1,6 +1,6 @@
 // Network module interface.
 
-package SharixInterface;
+package src.SharixInterface;
 
 import java.lang.String;
 
