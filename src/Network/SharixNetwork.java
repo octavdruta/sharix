@@ -30,7 +30,7 @@ public class SharixNetwork implements Network {
     public boolean downloadFile(String fromUser, String fname) {
     	System.out.println("Request to download " + fname + " from user " + fromUser);
     	try {
-    		messageTransfer.send(fromUser, MessageProcessor.requestMessage(fname));
+    		messageTransfer.send(fromUser, MessageProcessor.requestMessage(mediator.getMyUsername(), fname));
     	} catch (IOException e) {
 			System.out.println("Error: Sending request for file " + fname);
 			return false;
@@ -40,11 +40,12 @@ public class SharixNetwork implements Network {
 
     // Initializes fname file upload.
     public boolean uploadFile(final String toUser, final String fname) {
+    	System.out.println("Starting thread to upload file " + fname + " to " + toUser);
     	pool.execute(new Runnable() {
 			public void run() {
 				try {
 					String content = readFileAsString(fname);
-					ByteBuffer buffer = MessageProcessor.initialMessage(fname, content.length());
+					ByteBuffer buffer = MessageProcessor.initialMessage(mediator.getMyUsername(), fname, content.length());
 					messageTransfer.send(toUser, buffer);
 					int pos = 0;
 					int end = 0;
@@ -57,10 +58,10 @@ public class SharixNetwork implements Network {
 						String chunk = content.substring(pos, end);
 						System.out.println("Sending to " + toUser + " file chunk " + pos);
 						pos = end;
-						buffer = MessageProcessor.middleMessage(fname, chunk);
+						buffer = MessageProcessor.middleMessage(mediator.getMyUsername(), fname, chunk);
 						messageTransfer.send(toUser, buffer);
 					}
-					buffer = MessageProcessor.finalMessage(fname);
+					buffer = MessageProcessor.finalMessage(mediator.getMyUsername(), fname);
 					messageTransfer.send(toUser, buffer);
 					// TODO: Update transfer
 				} catch (IOException e) {
@@ -81,7 +82,8 @@ public class SharixNetwork implements Network {
         return true;
     }
     
-    private static String readFileAsString(String filePath) {
+    private String readFileAsString(String filePath) {
+    	filePath = "config/" + mediator.getMyUsername() + "/" + filePath; 
     	try {
     		byte[] buffer = new byte[(int) new File(filePath).length()];
     		FileInputStream f = new FileInputStream(filePath);
@@ -90,9 +92,11 @@ public class SharixNetwork implements Network {
    	        return new String(buffer);
     	} catch (IOException e) {
     		System.out.println("Error: Could not read file.");
-    		return null;
+    		System.exit(-1);
     	}
+        return null;
     }
+
 
     
 };

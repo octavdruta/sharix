@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -68,6 +69,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     		System.out.println("Error: Could not initialize server.");
     		return false;
     	}
+    	System.out.println("Server succesfully initialized.");
 		return true;
     }
 
@@ -96,14 +98,23 @@ public class DefaultMessageTransfer implements MessageTransfer{
         												  user.getPort());
         try {
         	conn.socketChannel = SocketChannel.open(address);
-        	ByteBuffer buffer = MessageProcessor.requestMessage(mediator.getMyUsername());
-        	System.out.println("user = " + MessageProcessor.getFilename(buffer));
+        	conn.socketChannel.configureBlocking(false);
+        	ByteBuffer buffer = MessageProcessor.requestMessage(mediator.getMyUsername(), "#");
         	conn.socketChannel.write(buffer);
          } catch (IOException e) {
         	System.out.println("Error: Could not connect to user: " + name);
         	return false;
         }
         connectedUsers.put(name, conn);
+       
+        try {
+			conn.socketChannel.register(selector, SelectionKey.OP_WRITE);
+		} catch (ClosedChannelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(-1);
+		}
+
         return true;
     }
 
@@ -197,7 +208,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
 			e.printStackTrace();
 		}
 		buffer.flip();
-		String username = MessageProcessor.getFilename(buffer);
+		String username = MessageProcessor.getUsername(buffer);
 
 		System.out.println("Accepted connection from: " + username);
 		ConnectionData conn = new ConnectionData();
@@ -210,12 +221,6 @@ public class DefaultMessageTransfer implements MessageTransfer{
 		pool.execute(new Runnable() {
 			public void run() {
 				SocketChannel socketChannel = (SocketChannel) key.channel();
-				
-				String address = socketChannel.socket().getInetAddress().getHostAddress();
-				int port = socketChannel.socket().getPort();
-				System.out.println("Port-read = " + port);
-				//String username = getUsername(address, port);
-				
 				ByteBuffer buffer = ByteBuffer.allocate(MessageProcessor.BUFFER_SIZE);
 				buffer.clear();
 
@@ -230,13 +235,15 @@ public class DefaultMessageTransfer implements MessageTransfer{
 					System.out.print("Error: Could not read data from channel.");
 					e.printStackTrace();
 				}
-				buffer.flip();
-				parseReceivedBuffer("", buffer);
+
+				parseReceivedBuffer(buffer);
 			}
 		});
     }
     
-    private synchronized void parseReceivedBuffer(String username, ByteBuffer buffer) {
+    private synchronized void parseReceivedBuffer(ByteBuffer buffer) {
+		buffer.flip();
+		String username = MessageProcessor.getUsername(buffer);
     	int type = MessageProcessor.getMessageType(buffer);
     	String fname = MessageProcessor.getFilename(buffer);
     	ConnectionData conn;
@@ -247,6 +254,8 @@ public class DefaultMessageTransfer implements MessageTransfer{
     	switch (type) {
     		
     		case MessageProcessor.REQUEST:
+    			System.out.println("User " + username + " requested file " + fname);
+ 			
     			String task = username + fname;
     			if (!uploadTasks.contains(task)) {
     				mediator.uploadFile(username, fname);
@@ -256,6 +265,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     		
     		case MessageProcessor.INITIAL:
     			try {
+    				System.out.println("Sending initial from " + fname + " to user " + username);
     				output = new DataOutputStream(new FileOutputStream(fname));
     				fdata = new FileData();
     				fdata.stream = output;
@@ -269,6 +279,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			break;
     			
     		case MessageProcessor.MIDDLE:
+    			System.out.println("Sending chunk from " + fname + " to user " + username);
     			conn = connectedUsers.get(username);
     			chunk = MessageProcessor.getChunk(buffer);
     			fdata = conn.download.get(fname);
@@ -282,6 +293,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			break;
     		
     		case MessageProcessor.FINAL:
+    			System.out.println("Sending final from " + fname + " to user " + username);
     			conn = connectedUsers.get(username);
     			fdata = conn.download.get(fname);
     			try {
