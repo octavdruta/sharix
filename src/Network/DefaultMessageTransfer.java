@@ -1,5 +1,7 @@
 package src.Network;
 
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -17,8 +19,15 @@ import src.Mediator.SharixMediator;
 import src.SharixInterface.User;
 
 
+class FileData {
+	DataOutputStream stream;
+	int currentSize;
+	int totalSize;
+}
+
 class ConnectionData {
 	SocketChannel socketChannel;
+	HashMap<String, FileData> download = new HashMap<String, FileData>();
 }
 
 public class DefaultMessageTransfer implements MessageTransfer{
@@ -70,7 +79,18 @@ public class DefaultMessageTransfer implements MessageTransfer{
         }
         return null;
     }
-
+    
+    // Returns username for a certain <address, port> pair.
+    private String getUsername(String address, int port) {
+    	Vector<User> users = mediator.getUserList();
+        for (User u : users) {
+        	if (address.equals(u.getAddress()) && port == u.getPort()) {
+        		return u.getName();
+        	}
+        }
+        return null;    	
+    }
+    
     // Connects to user identified by username.
     private boolean connectToUser(String name) {
     	if (isUserConnected(name))
@@ -165,9 +185,20 @@ public class DefaultMessageTransfer implements MessageTransfer{
 		SocketChannel socketChannel = serverSocketChannel.accept(); 
 		socketChannel.configureBlocking(false);
 		socketChannel.register(key.selector(), SelectionKey.OP_READ);
-		// Connection is accepted, but it is not yet registered as ConnectionData.
-		// We need to wait for the name identification package and then register it.
-		// ParseReceivedBuffer is responsible for registering this to ConnectionData.
+		
+		String address = socketChannel.socket().getInetAddress().getHostAddress();
+		int port = socketChannel.socket().getPort();
+		
+		String username = getUsername(address, port);
+		if (username == null) {
+			System.out.println("Error: Accept failed. Username not found.");
+			return;
+		}
+		
+		ConnectionData conn = new ConnectionData();
+		conn.socketChannel = socketChannel;
+		connectedUsers.put(username, conn);
+		System.out.println("INFO: Accepted connection with user: " + username);
     }
     
     // This method is called when data is available on a certain channel.
@@ -175,8 +206,14 @@ public class DefaultMessageTransfer implements MessageTransfer{
 		pool.execute(new Runnable() {
 			public void run() {
 				SocketChannel socketChannel = (SocketChannel) key.channel();
+				
+				String address = socketChannel.socket().getInetAddress().getHostAddress();
+				int port = socketChannel.socket().getPort();
+				String username = getUsername(address, port);
+				
 				ByteBuffer buffer = ByteBuffer.allocate(MessageProcessor.BUFFER_SIZE);
 				buffer.clear();
+
 				try {
 					while (buffer.hasRemaining()) {
 						if (socketChannel.read(buffer) <= 0) {
@@ -187,10 +224,65 @@ public class DefaultMessageTransfer implements MessageTransfer{
 					System.out.print("Error: Could not read data from channel.");
 					e.printStackTrace();
 				}
-				// TODO: call method to process buffers.
-				// parseReceivedBuffer(username, buffer, key)  - this must be thread safe - async calls
-				// We need a way to decide when a certain connection must be removed from selector.
+				parseReceivedBuffer(username, buffer);
 			}
 		});
+    }
+    
+    private synchronized void parseReceivedBuffer(String username, ByteBuffer buffer) {
+    	int type = MessageProcessor.getMessageType(buffer);
+    	String fname = MessageProcessor.getFilename(buffer);
+    	ConnectionData conn;
+    	DataOutputStream output;
+    	FileData fdata;
+    	String chunk;
+    	
+    	switch (type) {
+    		
+    		case MessageProcessor.REQUEST:
+    			mediator.uploadFile(username, fname);
+    			break;
+    		
+    		case MessageProcessor.INITIAL:
+    			try {
+    				output = new DataOutputStream(new FileOutputStream(fname));
+    				fdata = new FileData();
+    				fdata.stream = output;
+    				fdata.totalSize = MessageProcessor.getFileLength(buffer);
+    				fdata.currentSize = 0;
+    				conn = connectedUsers.get(username);
+        			conn.download.put(fname, fdata);
+    			} catch (IOException e) {
+    				System.out.println("Error: Could not create output file.");
+    			}
+    			break;
+    			
+    		case MessageProcessor.MIDDLE:
+    			conn = connectedUsers.get(username);
+    			chunk = MessageProcessor.getChunk(buffer);
+    			fdata = conn.download.get(fname);
+    			int waitSize = Math.min(MessageProcessor.BUFFER_SIZE, fdata.totalSize - fdata.currentSize);
+    			chunk = chunk.substring(0, waitSize);
+    			fdata.currentSize += waitSize;
+    			try {
+    				fdata.stream.writeBytes(chunk);
+    				// TODO: update transfer.
+    			} catch (IOException e) {
+    				System.out.println("Error: Could not append chunk to file.");
+    			}
+    			break;
+    		
+    		case MessageProcessor.FINAL:
+    			conn = connectedUsers.get(username);
+    			fdata = conn.download.get(fname);
+    			try {
+    				fdata.stream.close();
+    				conn.download.remove(fname);
+    				// TODO: update transfer.
+    			} catch (IOException e) {
+    				System.out.println("Error: Could not close file.");
+    			}
+    			break;
+    	}
     }
 }
