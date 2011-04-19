@@ -19,6 +19,7 @@ public class MessageProcessorTest extends TestCase {
 	
 	public void testInitialMessage() {
 		ByteBuffer buf = MessageProcessor.initialMessage(filename, fileLength);
+		assertEquals(MessageProcessor.BUFFER_SIZE, buf.limit());
 		assertNull(MessageProcessor.getChunk(buf));
 		assertEquals(fileLength, MessageProcessor.getFileLength(buf));
 		assertEquals(filename, MessageProcessor.getFilename(buf));

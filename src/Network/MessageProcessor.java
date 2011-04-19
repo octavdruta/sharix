@@ -29,11 +29,18 @@ public class MessageProcessor {
 		}
 	}
 	
+	private static void addPadding(ByteBuffer buf) {
+		while (buf.position() < buf.capacity()) {
+			buf.put((byte) 0);
+		}
+	}
+	
 	public static ByteBuffer initialMessage(String filename, int fileLength) {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(INITIAL);
 		storeFilename(buf, filename);
 		buf.putInt(fileLength);
+		addPadding(buf);
 		buf.flip();
 		return buf;
 	}
@@ -46,6 +53,7 @@ public class MessageProcessor {
 		for (char c : chunk.toCharArray()) {
 			buf.putChar(c);
 		}
+		addPadding(buf);
 		buf.flip();
 		return buf;
 	}
@@ -54,6 +62,7 @@ public class MessageProcessor {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(FINAL);
 		storeFilename(buf, filename);
+		addPadding(buf);
 		buf.flip();
 		return buf;
 	}
@@ -62,6 +71,7 @@ public class MessageProcessor {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(REQUEST);
 		storeFilename(buf, filename);
+		addPadding(buf);
 		buf.flip();
 		return buf;
 	}
