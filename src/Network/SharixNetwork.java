@@ -34,35 +34,38 @@ public class SharixNetwork implements Network {
 
     // Initializes fname file upload.
     public boolean uploadFile(final String toUser, final String fname) {
-        // initiates upload and reports progress via mediator.updateTransfer()
     	pool.execute(new Runnable() {
 			public void run() {
-				String content = readFileAsString(fname);
-				ByteBuffer buffer = MessageProcessor.initialMessage(fname, content.length()));
-				messageTransfer.send(toUser, buffer);
-				int pos = 0;
-				int end = 0;
-				while (pos < content.length()) {
-					if (pos + BUFFER_SIZE <= content.length()) {
-						end = pos + BUFFER_SIZE;
-					} else {
-						end = content.length();
-					}
-					String chunk = content.substring(pos, end);
-					while (chunk.length() < BUFFER_SIZE) chunk.append(" ");
-					System.out.println("Sending to " + toUser + " file chunk " + pos);
-					pos = end;
-					buffer = MessageProcessor.middleMessage(fname, chunk);
+				try {
+					String content = readFileAsString(fname);
+					ByteBuffer buffer = MessageProcessor.initialMessage(fname, content.length());
 					messageTransfer.send(toUser, buffer);
-					
-		  	    }
-				buffer = MessageProcessor.finalMessage(fname);
-				messageTransfer.send(toUser, buffer);
-				// TODO: Update transfer
+					int pos = 0;
+					int end = 0;
+					while (pos < content.length()) {
+						if (pos + BUFFER_SIZE <= content.length()) {
+							end = pos + BUFFER_SIZE;
+						} else {
+							end = content.length();
+						}
+						String chunk = content.substring(pos, end);
+						while (chunk.length() < BUFFER_SIZE) {
+							chunk.concat(" ");
+						}
+						System.out.println("Sending to " + toUser + " file chunk " + pos);
+						pos = end;
+						buffer = MessageProcessor.middleMessage(fname, chunk);
+						messageTransfer.send(toUser, buffer);
+					}
+					buffer = MessageProcessor.finalMessage(fname);
+					messageTransfer.send(toUser, buffer);
+					// TODO: Update transfer
+				} catch (IOException e) {
+					System.out.println("Error: Upload File failed.");
+				}
 			}
     	});
-    	
-        return true;
+    	return true;
     }
 
     // Aborts fname file download.

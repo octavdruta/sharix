@@ -1,5 +1,7 @@
 package src.Network;
 
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -17,8 +19,15 @@ import src.Mediator.SharixMediator;
 import src.SharixInterface.User;
 
 
+class FileData {
+	DataOutputStream stream;
+	int currentSize;
+	int totalSize;
+}
+
 class ConnectionData {
 	SocketChannel socketChannel;
+	HashMap<String, FileData> download = new HashMap<String, FileData>();
 }
 
 public class DefaultMessageTransfer implements MessageTransfer{
@@ -26,8 +35,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
 	ServerSocketChannel serverSocketChannel;
     HashMap<String, ConnectionData> connectedUsers;
     SharixMediator mediator;
-    
-	static ExecutorService pool = Executors.newFixedThreadPool(5);
+    ExecutorService pool = Executors.newFixedThreadPool(5);
 	
 	// Constructor.
 	public DefaultMessageTransfer(SharixMediator mediator) {
@@ -215,22 +223,65 @@ public class DefaultMessageTransfer implements MessageTransfer{
 					System.out.print("Error: Could not read data from channel.");
 					e.printStackTrace();
 				}
-				// TODO: call method to process buffers.
-				// parseReceivedBuffer(username, buffer, key)  - this must be thread safe - async calls
-				// We need a way to decide when a certain connection must be removed from selector.
 				parseReceivedBuffer(username, buffer);
 			}
 		});
     }
     
-    private void parseReceivedBuffer(String username, ByteBuffer buffer) {
-    	// if request to upload file
-    	// if initial download message. => open file
-    	// if middle message => append file
-    	// if final message => close file
-    
+    private synchronized void parseReceivedBuffer(String username, ByteBuffer buffer) {
+    	int type = MessageProcessor.getMessageType(buffer);
+    	String fname = MessageProcessor.getFilename(buffer);
+    	ConnectionData conn;
+    	DataOutputStream output;
+    	FileData fdata;
+    	String chunk;
     	
+    	switch (type) {
+    		
+    		case MessageProcessor.REQUEST:
+    			mediator.uploadFile(username, fname);
+    			break;
+    		
+    		case MessageProcessor.INITIAL:
+    			try {
+    				output = new DataOutputStream(new FileOutputStream(fname));
+    				fdata = new FileData();
+    				fdata.stream = output;
+    				fdata.totalSize = MessageProcessor.getFileLength(buffer);
+    				fdata.currentSize = 0;
+    				conn = connectedUsers.get(username);
+        			conn.download.put(fname, fdata);
+    			} catch (IOException e) {
+    				System.out.println("Error: Could not create output file.");
+    			}
+    			break;
+    			
+    		case MessageProcessor.MIDDLE:
+    			conn = connectedUsers.get(username);
+    			chunk = MessageProcessor.getChunk(buffer);
+    			fdata = conn.download.get(fname);
+    			int waitSize = Math.min(MessageProcessor.BUFFER_SIZE, fdata.totalSize - fdata.currentSize);
+    			chunk = chunk.substring(0, waitSize);
+    			fdata.currentSize += waitSize;
+    			try {
+    				fdata.stream.writeBytes(chunk);
+    				// TODO: update transfer.
+    			} catch (IOException e) {
+    				System.out.println("Error: Could not append chunk to file.");
+    			}
+    			break;
+    		
+    		case MessageProcessor.FINAL:
+    			conn = connectedUsers.get(username);
+    			fdata = conn.download.get(fname);
+    			try {
+    				fdata.stream.close();
+    				conn.download.remove(fname);
+    				// TODO: update transfer.
+    			} catch (IOException e) {
+    				System.out.println("Error: Could not close file.");
+    			}
+    			break;
+    	}
     }
-    
-    
 }
