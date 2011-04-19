@@ -36,7 +36,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     HashMap<String, ConnectionData> connectedUsers;
     SharixMediator mediator;
 
-	static ExecutorService pool = Executors.newFixedThreadPool(5);
+	ExecutorService pool = Executors.newFixedThreadPool(5);
 
 	// Constructor.
 	public DefaultMessageTransfer(SharixMediator mediator) {
