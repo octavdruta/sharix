@@ -17,14 +17,14 @@ public class Sharix {
 	SharixWebServiceClientMock webserviceclient;
 	SharixMediator mediator;
 	private static final String DEFAULT_CONFIG = "config";
-	
+
 	public Sharix(String username, String configPath) {
 		mediator = new SharixMediator(username);
 		gui = new SharixGUI(mediator, "Sharix - " + username);
 		webserviceclient = new SharixWebServiceClientMock(mediator, configPath);
 		network = new SharixNetwork(mediator);
 	}
-	
+
 	public void buildGUI() {
         gui.buildGUI();
     }
@@ -34,7 +34,7 @@ public class Sharix {
             (new ListWorker()).doInBackground();
         } catch(Exception e) {}
     }
-    
+   
 	public static void main(String[] args) {
 		if (args.length != 2 && args.length != 1) {
 			System.err.println("The program takes one parameter, the username, and another optional parameter: the path to the config dir.");
