@@ -39,36 +39,80 @@ public class SharixNetwork implements Network {
         this.myName = "vlad";
         initServer();
     }
+        
+    // Thread running selector mechanism.
+    public void selectorThread() {
+    	pool.execute(new Runnable() {
+    		public void run() {
+    			try {
+    				while (true) {
+    					selector.select();
+    					Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+    					while (it.hasNext()) {
+    						SelectionKey key = it.next();
+    						it.remove();
+    						if (key.isAcceptable())
+    							accept(key);
+    						else if (key.isReadable())
+    							read(key);
+    					}
+    				}
+    			} catch (IOException e) {
+    				
+    			} finally {
+        			// TODO - cleanup selector.
+        		}
+    		};
+    	});
+    }
+    
+    // This method is called when new connection is required.
+    public void accept(final SelectionKey key) throws IOException {
+		System.out.println("ACCEPT: ");
+		ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
+		SocketChannel socketChannel = serverSocketChannel.accept(); 
+		socketChannel.configureBlocking(false);
+		socketChannel.register(key.selector(), SelectionKey.OP_READ);
+		// Connection is accepted, but it is not yet registered as ConnectionData.
+		// We need to wait for the name identification package and then register it.
+		// ParseReceivedBuffer is responsible for registering this to ConnectionData.
+    }
     
     // This method is called when data is available on a certain channel.
-    public static void read(final SelectionKey key) throws IOException {
-		key.interestOps(0);
-		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-		buffer.clear();
+    public void read(final SelectionKey key) throws IOException {
 		pool.execute(new Runnable() {
 			public void run() {
 				SocketChannel socketChannel = (SocketChannel) key.channel();
-				int size = 0;
+				ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+				buffer.clear();
 				try {
-					while ((size = socketChannel.read(buf)) > 0) {
-					}
+					while (buffer.hasRemaining()) {
+						if (socketChannel.read(buffer) <= 0) {
+							System.out.println("ERROR: Protocol lost consistency.");
+						}
+					}					
 				} catch (IOException e) {
 					System.out.print("Error: Could not read data from channel.");
 					e.printStackTrace();
 				}
-				if (size == -1) {
-					System.out.println("Error: Channel is dead.");
-				}
-				// TODO: Check if buffer is full, but there is still data to come.
 				// TODO: call method to process buffers.
-				// parseReceivedBuffer(username, buffer)  - this must be thread safe - async calls 
+				// parseReceivedBuffer(username, buffer, key)  - this must be thread safe - async calls
+				// We need a way to decide when a certain connection must be removed from selector.
 			}
 		});
     }
 
     // Sends bytebuffer data to user.
-    public void send(String username, ByteBuffer buffer) {
+    public boolean send(String username, ByteBuffer buffer) throws IOException {
+    	ConnectionData conn = connectedUsers.get(username);
+    	if (conn == null)
+    		return false;
     	
+    	// TODO: What happens if socket refuses more data ?
+    	while (buffer.hasRemaining()) {
+    		conn.socketChannel.write(buffer);
+    	}
+    	return true;    	
     }
     
     // Initializes server and polling mechanism.
@@ -132,7 +176,6 @@ public class SharixNetwork implements Network {
 
     // Disconnects from user identified by username.
     public boolean disconnectFromUser(String name) {
-        // disconnect socket connectedUsers.get(name)
         ConnectionData conn = connectedUsers.get(name);
         if (conn == null)
         	return true;
