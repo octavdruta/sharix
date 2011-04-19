@@ -8,10 +8,11 @@ import src.SharixInterface.Network;
 
 public class SharixNetwork implements Network {
     SharixMediator mediator;
-    DefaultMessageTransfer messageTransfer;
+    MessageTransfer messageTransfer;
     
     public SharixNetwork(SharixMediator mediator) {
         this.mediator = mediator;
+        mediator.registerNetwork(this);
         messageTransfer = new DefaultMessageTransfer(mediator);
     }
         

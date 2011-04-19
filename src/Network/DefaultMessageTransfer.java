@@ -21,7 +21,7 @@ class ConnectionData {
 	SocketChannel socketChannel;
 };
 
-public class DefaultMessageTransfer {
+public class DefaultMessageTransfer implements MessageTransfer{
 	String myUsername;
 	Selector selector;
 	ServerSocketChannel serverSocketChannel;
