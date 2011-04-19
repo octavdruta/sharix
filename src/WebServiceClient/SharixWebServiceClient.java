@@ -29,6 +29,6 @@ public class SharixWebServiceClient implements WebServiceClient {
 
 	// Returns the list with all the users currently connected to the server.
 	public Vector<User> getUserList() {
-		return null;
+		return users;
 	}
 };

@@ -14,6 +14,7 @@ public class SharixUser implements User {
 		this.name = name;
 		this.ip = ip;
 		this.port = port;
+		fileList = new Vector<String>();
 	}
 	
 	@Override

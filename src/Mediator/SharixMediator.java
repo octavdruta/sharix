@@ -15,6 +15,15 @@ public class SharixMediator implements NetworkMediator, GUIMediator, WebServiceC
 	Network network;
 	GUI gui;
 	WebServiceClient webServiceClient;
+	String username;
+
+	public SharixMediator(String username) {
+		this.username = username;
+	}
+	
+	public String getMyUsername() {
+		return username;
+	}
 
 	// Registeres network component to mediator.
 	public void registerNetwork(Network network) {

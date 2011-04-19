@@ -1,8 +1,6 @@
 package src;
 
 import java.util.List;
-import java.util.Random;
-import java.util.Vector;
 
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -18,12 +16,13 @@ public class Sharix {
 	SharixNetwork network;
 	SharixWebServiceClientMock webserviceclient;
 	SharixMediator mediator;
+	private static final String DEFAULT_CONFIG = "config";
 	
-	public Sharix(String username) {
-		mediator = new SharixMediator();
+	public Sharix(String username, String configPath) {
+		mediator = new SharixMediator(username);
 		gui = new SharixGUI(mediator, "Sharix - " + username);
+		webserviceclient = new SharixWebServiceClientMock(mediator, configPath);
 		network = new SharixNetwork(mediator);
-		webserviceclient = new SharixWebServiceClientMock(mediator);
 	}
 	
 	public void buildGUI() {
@@ -37,11 +36,11 @@ public class Sharix {
     }
     
 	public static void main(String[] args) {
-		if (args.length != 2) {
-			System.err.println("The program takes one parameter: the username.");
+		if (args.length != 2 && args.length != 1) {
+			System.err.println("The program takes one parameter, the username, and another optional parameter: the path to the config dir.");
 			System.exit(-1);
 		}
-		final Sharix app = new Sharix(args[1]);
+		final Sharix app = new Sharix(args[0], args.length == 1 ? DEFAULT_CONFIG : args[1]);
 		SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 app.buildGUI();
@@ -55,7 +54,7 @@ public class Sharix {
 
         @Override
         protected Void doInBackground() throws Exception {
-            publish(1);
+            /*publish(1);
             boolean newUser = false;
             boolean removeUser = false;
             Random rnd = new Random();
@@ -74,11 +73,13 @@ public class Sharix {
                     newUser = true;
                 }
             }
+            */
             return null;
         }
 
         @Override
         protected void process(List<Integer> list) {
+        	/*
             Vector<String> filesAndrei = new Vector<String>();
             filesAndrei.add("A1.txt");
             filesAndrei.add("A2.txt");
@@ -114,6 +115,7 @@ public class Sharix {
                     break;
                 }
             }
+            */
         }
 
         @Override
