@@ -261,9 +261,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			conn = connectedUsers.get(username);
     			chunk = MessageProcessor.getChunk(buffer);
     			fdata = conn.download.get(fname);
-    			int waitSize = Math.min(MessageProcessor.BUFFER_SIZE, fdata.totalSize - fdata.currentSize);
-    			chunk = chunk.substring(0, waitSize);
-    			fdata.currentSize += waitSize;
+    			fdata.currentSize += chunk.length();
     			try {
     				fdata.stream.writeBytes(chunk);
     				// TODO: update transfer.
