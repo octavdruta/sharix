@@ -9,10 +9,12 @@ import java.util.*;
 
 public class SharixWebServiceClient implements WebServiceClient {
 	SharixMediator mediator;
+	Vector<User> users;
 	
 	public SharixWebServiceClient(SharixMediator mediator) {
 		this.mediator = mediator;
 		mediator.registerWebServiceClient(this);
+		users = new Vector<User>();
 	}
 	
 	// Connects to filesharing server identified by address and port.
