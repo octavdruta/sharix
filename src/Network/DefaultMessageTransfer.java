@@ -44,7 +44,7 @@ public class DefaultMessageTransfer {
 	
 	// Initializes server and polling mechanism.
     private boolean initServer() {
-    	User user = findUser(myUsername);
+    	User user = findUser(mediator.getMyUsername());
     	if (user == null)
     		return false;
     	    	  	
@@ -68,8 +68,9 @@ public class DefaultMessageTransfer {
     private User findUser(String name) {
         Vector<User> users = mediator.getUserList();
         for (User u : users) {
-        	if (name.equals(u.getName()))
+        	if (name.equals(u.getName())) {
         		return u;
+        	}
         }
         return null;
     }
