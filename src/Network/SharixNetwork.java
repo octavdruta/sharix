@@ -25,10 +25,14 @@ public class SharixNetwork implements Network {
         mediator.registerNetwork(this);
         messageTransfer = new DefaultMessageTransfer(mediator);
     }
-        
+
     // Initializes fname file download.
     public boolean downloadFile(String fromUser, String fname) {
-        // initiates download and reports progress via mediator.updateTransfer()
+    	try {
+			messageTransfer.send(fromUser, MessageProcessor.requestMessage(fname));
+		} catch (IOException e) {
+			return false;
+		}
         return true;
     }
 
