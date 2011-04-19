@@ -28,6 +28,7 @@ public class MessageProcessorTest extends TestCase {
 	
 	public void testMiddleMessage() {
 		ByteBuffer buf = MessageProcessor.middleMessage(filename, chunk);
+		assertEquals(MessageProcessor.BUFFER_SIZE, buf.limit());
 		assertEquals(chunk, MessageProcessor.getChunk(buf));
 		assertEquals(-1, MessageProcessor.getFileLength(buf));
 		assertEquals(filename, MessageProcessor.getFilename(buf));
@@ -36,6 +37,7 @@ public class MessageProcessorTest extends TestCase {
 	
 	public void testFinalMessage() {
 		ByteBuffer buf = MessageProcessor.finalMessage(filename);
+		assertEquals(MessageProcessor.BUFFER_SIZE, buf.limit());
 		assertNull(chunk, MessageProcessor.getChunk(buf));
 		assertEquals(-1, MessageProcessor.getFileLength(buf));
 		assertEquals(filename, MessageProcessor.getFilename(buf));
@@ -44,6 +46,7 @@ public class MessageProcessorTest extends TestCase {
 	
 	public void testRequestMessage() {
 		ByteBuffer buf = MessageProcessor.requestMessage(filename);
+		assertEquals(MessageProcessor.BUFFER_SIZE, buf.limit());
 		assertNull(chunk, MessageProcessor.getChunk(buf));
 		assertEquals(-1, MessageProcessor.getFileLength(buf));
 		assertEquals(filename, MessageProcessor.getFilename(buf));
