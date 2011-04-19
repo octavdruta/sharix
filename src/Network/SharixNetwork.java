@@ -28,7 +28,15 @@ public class SharixNetwork implements Network {
         
     // Initializes fname file download.
     public boolean downloadFile(String fromUser, String fname) {
-        // initiates download and reports progress via mediator.updateTransfer()
+    	System.out.println("Request to download " + fname + " from user " + fromUser);
+    	ByteBuffer buffer = MessageProcessor.requestMessage(fname);
+    	try {
+    		messageTransfer.send(fromUser, buffer);
+    	} catch (IOException e) {
+			System.out.println("Error: Sending request for file " + fname);
+			return false;
+		}
+     
         return true;
     }
 
