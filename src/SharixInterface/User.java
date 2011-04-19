@@ -15,7 +15,7 @@ public interface User {
 
 	// Gets user's port.
 	public Integer getPort();
-
+	
 	// Gets list of shared files.
 	public Vector<String> getFileList();
 	

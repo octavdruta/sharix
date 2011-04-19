@@ -10,6 +10,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +36,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
 	ServerSocketChannel serverSocketChannel;
     HashMap<String, ConnectionData> connectedUsers;
     SharixMediator mediator;
+    HashSet<String> uploadTasks = new HashSet<String>();
 
 	ExecutorService pool = Executors.newFixedThreadPool(5);
 
@@ -80,17 +82,6 @@ public class DefaultMessageTransfer implements MessageTransfer{
         return null;
     }
     
-    // Returns username for a certain <address, port> pair.
-    private String getUsername(String address, int port) {
-    	Vector<User> users = mediator.getUserList();
-        for (User u : users) {
-        	if (address.equals(u.getAddress()) && port == u.getPort()) {
-        		return u.getName();
-        	}
-        }
-        return null;    	
-    }
-    
     // Connects to user identified by username.
     private boolean connectToUser(String name) {
     	if (isUserConnected(name))
@@ -105,12 +96,14 @@ public class DefaultMessageTransfer implements MessageTransfer{
         												  user.getPort());
         try {
         	conn.socketChannel = SocketChannel.open(address);
-        } catch (IOException e) {
+        	ByteBuffer buffer = MessageProcessor.requestMessage(mediator.getMyUsername());
+        	System.out.println("user = " + MessageProcessor.getFilename(buffer));
+        	conn.socketChannel.write(buffer);
+         } catch (IOException e) {
         	System.out.println("Error: Could not connect to user: " + name);
         	return false;
         }
         connectedUsers.put(name, conn);
-
         return true;
     }
 
@@ -182,23 +175,34 @@ public class DefaultMessageTransfer implements MessageTransfer{
     private void accept(final SelectionKey key) throws IOException {
 		System.out.println("ACCEPT: ");
 		ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
+
 		SocketChannel socketChannel = serverSocketChannel.accept(); 
 		socketChannel.configureBlocking(false);
 		socketChannel.register(key.selector(), SelectionKey.OP_READ);
 		
-		String address = socketChannel.socket().getInetAddress().getHostAddress();
-		int port = socketChannel.socket().getPort();
-		
-		String username = getUsername(address, port);
-		if (username == null) {
-			System.out.println("Error: Accept failed. Username not found.");
-			return;
+		ByteBuffer buffer = ByteBuffer.allocate(MessageProcessor.BUFFER_SIZE);
+		buffer.clear();
+
+		try {
+			while (buffer.hasRemaining()) {
+				System.out.println(buffer.hasRemaining());
+				int size;
+				if ((size = socketChannel.read(buffer)) <= 0) {
+					System.out.println("ERROR: Protocol lost consistency.");
+					System.exit(-1);
+				}
+			}					
+		} catch (IOException e) {
+			System.out.print("Error: Could not read data from channel.");
+			e.printStackTrace();
 		}
-		
+		buffer.flip();
+		String username = MessageProcessor.getFilename(buffer);
+
+		System.out.println("Accepted connection from: " + username);
 		ConnectionData conn = new ConnectionData();
 		conn.socketChannel = socketChannel;
 		connectedUsers.put(username, conn);
-		System.out.println("INFO: Accepted connection with user: " + username);
     }
     
     // This method is called when data is available on a certain channel.
@@ -209,7 +213,8 @@ public class DefaultMessageTransfer implements MessageTransfer{
 				
 				String address = socketChannel.socket().getInetAddress().getHostAddress();
 				int port = socketChannel.socket().getPort();
-				String username = getUsername(address, port);
+				System.out.println("Port-read = " + port);
+				//String username = getUsername(address, port);
 				
 				ByteBuffer buffer = ByteBuffer.allocate(MessageProcessor.BUFFER_SIZE);
 				buffer.clear();
@@ -218,13 +223,15 @@ public class DefaultMessageTransfer implements MessageTransfer{
 					while (buffer.hasRemaining()) {
 						if (socketChannel.read(buffer) <= 0) {
 							System.out.println("ERROR: Protocol lost consistency.");
+							System.exit(-1);
 						}
 					}					
 				} catch (IOException e) {
 					System.out.print("Error: Could not read data from channel.");
 					e.printStackTrace();
 				}
-				parseReceivedBuffer(username, buffer);
+				buffer.flip();
+				parseReceivedBuffer("", buffer);
 			}
 		});
     }
@@ -240,7 +247,11 @@ public class DefaultMessageTransfer implements MessageTransfer{
     	switch (type) {
     		
     		case MessageProcessor.REQUEST:
-    			mediator.uploadFile(username, fname);
+    			String task = username + fname;
+    			if (!uploadTasks.contains(task)) {
+    				mediator.uploadFile(username, fname);
+    				uploadTasks.add(task);
+    			}
     			break;
     		
     		case MessageProcessor.INITIAL:

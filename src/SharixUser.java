@@ -8,13 +8,16 @@ public class SharixUser implements User {
 	String name;
 	String ip;
 	int port;
+	int replyPort;
 	Vector<String> fileList;
+	Vector<Integer> replyPorts;
 	
 	public SharixUser(String name, String ip, int port) {
 		this.name = name;
 		this.ip = ip;
 		this.port = port;
 		fileList = new Vector<String>();
+		replyPorts = new Vector<Integer>();
 	}
 	
 	@Override
@@ -36,7 +39,7 @@ public class SharixUser implements User {
 	public Integer getPort() {
 		return port;
 	}
-
+	
 	@Override
 	public boolean addFile(String file) {
 		return fileList.add(file);
