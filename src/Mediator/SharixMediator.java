@@ -12,74 +12,83 @@ import src.SharixInterface.User;
 import java.util.*;
 
 public class SharixMediator implements NetworkMediator, GUIMediator, WebServiceClientMediator {
-  Network network;
-  GUI gui;
-  WebServiceClient webServiceClient;
+	Network network;
+	GUI gui;
+	WebServiceClient webServiceClient;
 
-  // Registeres network component to mediator.
-  public void registerNetwork(Network network) {
-    this.network = network;
-  }
+	// Registeres network component to mediator.
+	public void registerNetwork(Network network) {
+		this.network = network;
+	}
 
-  // Registers GUI component to mediator.
-  public void registerGUI(GUI gui) {
-    this.gui = gui;
-  }
+	// Registers GUI component to mediator.
+	public void registerGUI(GUI gui) {
+		this.gui = gui;
+	}
 
-  // Registers WebServiceClient to mediator.
-  public void registerWebServiceClient(WebServiceClient client) {
-    webServiceClient = client;
-  }
+	// Registers WebServiceClient to mediator.
+	public void registerWebServiceClient(WebServiceClient client) {
+		webServiceClient = client;
+	}
 
-  // Adds a new user and its corresponding list of shared files.
-  @Override
-  public boolean addUser(String name, Vector<String> fileList) {
-    return true;
-  }
+	// Adds a new user and its corresponding list of shared files.
+	@Override
+	public boolean addUser(String name, Vector<String> fileList) {
+		return gui.addUser(name, fileList);
+	}
 
-  // Removes user.
-  public boolean removeUser(String name) {
-    return true;
-  }
+	// Removes user.
+	@Override
+	public boolean removeUser(String name) {
+		return gui.removeUser(name);
+	}
 
-  // Adds a new shared file to the user's list.
-  public boolean addFileToUser(String user, String file) {
-    return true;
-  }
+	// Adds a new shared file to the user's list.
+	@Override
+	public boolean addFileToUser(String user, String file) {
+		return gui.addFileToUser(user, file);
+	}
 
-  // Removes a shared file from user's list.
-  public boolean removeFileFromUser(String user, String file) {
-    return true;
-  }
+	// Removes a shared file from user's list.
+	@Override
+	public boolean removeFileFromUser(String user, String file) {
+		return gui.removeFileFromUser(user, file);
+	}
 
-  // Updates file transfer status.
-  public void updateTransfer(String fromUser, String toUser, String file,
-                             String status, Integer progress) { }
+	// Updates file transfer status.
+	@Override
+	public void updateTransfer(String fromUser, String toUser, String file,
+			String status, Integer progress) {
+		gui.updateTransfer(fromUser, toUser, file, status, progress);
+	}
 
-  // Returns the list with all the users currently connected to the server.
-  public Vector<User> getUserList() {
-    return new Vector<User>();
-  }
+	// Returns the list with all the users currently connected to the server.
+	@Override
+	public Vector<User> getUserList() {
+		return webServiceClient.getUserList();
+	}
 
-  // Initializes fname file download.
-  public boolean downloadFile(String fromUser, String fname) {
-    if (!network.isUserConnected(fromUser))
-      network.connectToUser(fromUser);
-	return true;
-  }
+	// Initializes fname file download.
+	@Override
+	public boolean downloadFile(String fromUser, String fname) {
+		return network.downloadFile(fromUser, fname);
+	}
 
-  // Initializes fname file upload.
-  public boolean uploadFile(String toUser, String fname) {
-    return true;
-  }
+	// Initializes fname file upload.
+	@Override
+	public boolean uploadFile(String toUser, String fname) {
+		return network.uploadFile(toUser, fname);
+	}
 
-  // Aborts fname file download.
-  public boolean abortDownload(String fromUser, String fname) {
-    return true;
-  }
+	// Aborts fname file download.
+	@Override
+	public boolean abortDownload(String fromUser, String fname) {
+		return network.abortDownload(fromUser, fname);
+	}
 
-  // Aborts fname file upload.
-  public boolean abortUpload(String toUser, String fname) {
-    return true;
-  }
+	// Aborts fname file upload.
+	@Override
+	public boolean abortUpload(String toUser, String fname) {
+		return network.abortUpload(toUser, fname);
+	}
 };

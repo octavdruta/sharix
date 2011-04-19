@@ -2,19 +2,21 @@
 
 package src.Network;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
-
-import src.SharixInterface.*;
-import src.Mediator.*;
-import java.util.*;
-
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.net.*;
-import java.util.*;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import src.Mediator.SharixMediator;
+import src.SharixInterface.Network;
+import src.SharixInterface.User;
 
 class ConnectionData {
 	SocketChannel socketChannel;
