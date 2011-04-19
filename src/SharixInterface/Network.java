@@ -5,15 +5,6 @@ package src.SharixInterface;
 import java.lang.String;
 
 public interface Network {
-  // Connects to user identified by username.
-  public boolean connectToUser(String name);
-
-  // Checks if user is connected.
-  public boolean isUserConnected(String name);
-
-  // Disconnects from user identified by username.
-  public boolean disconnectFromUser(String name);
-
   // Initializes fname file download.
   public boolean downloadFile(String fromUser, String fname);
 
