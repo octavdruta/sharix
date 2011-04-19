@@ -19,22 +19,18 @@ import src.SharixInterface.User;
 
 class ConnectionData {
 	SocketChannel socketChannel;
-};
+}
 
 public class DefaultMessageTransfer implements MessageTransfer{
-	String myUsername;
 	Selector selector;
 	ServerSocketChannel serverSocketChannel;
     HashMap<String, ConnectionData> connectedUsers;
     SharixMediator mediator;
     
 	static ExecutorService pool = Executors.newFixedThreadPool(5);
-	static final int BUFFER_SIZE = 1000;
 	
 	// Constructor.
 	public DefaultMessageTransfer(SharixMediator mediator) {
-		// TODO (asoare): Implement a method that returns my username.
-	    // this.myUsername = mediator.getMyUsername();
 		this.mediator = mediator;
 		connectedUsers = new HashMap<String, ConnectionData>();
 		if (!initServer()) {
@@ -179,7 +175,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
 		pool.execute(new Runnable() {
 			public void run() {
 				SocketChannel socketChannel = (SocketChannel) key.channel();
-				ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+				ByteBuffer buffer = ByteBuffer.allocate(MessageProcessor.BUFFER_SIZE);
 				buffer.clear();
 				try {
 					while (buffer.hasRemaining()) {
