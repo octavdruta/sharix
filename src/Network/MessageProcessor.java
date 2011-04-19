@@ -10,7 +10,7 @@ public class MessageProcessor {
 	
 	static final int BUFFER_SIZE = 1000;
 	
-	private static void storeFilename(ByteBuffer buf, String filename) {
+	private static void storeString(ByteBuffer buf, String filename) {
 		buf.putInt(filename.length());
 		for (char c : filename.toCharArray()) {
 		    buf.putChar(c);
@@ -21,8 +21,16 @@ public class MessageProcessor {
 		buf.getInt();
 	}
 	
-	private static void skipFilename(ByteBuffer buf) {
+	private static void skipUsername(ByteBuffer buf) {
 		skipType(buf);
+		int length = buf.getInt();
+		for (int i = 0; i < length; i++) {
+			buf.getChar();
+		}
+	}
+	
+	private static void skipFilename(ByteBuffer buf) {
+		skipUsername(buf);
 		int length = buf.getInt();
 		for (int i = 0; i < length; i++) {
 			buf.getChar();
@@ -35,20 +43,22 @@ public class MessageProcessor {
 		}
 	}
 	
-	public static ByteBuffer initialMessage(String filename, int fileLength) {
+	public static ByteBuffer initialMessage(String username, String filename, int fileLength) {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(INITIAL);
-		storeFilename(buf, filename);
+		storeString(buf, username);
+		storeString(buf, filename);
 		buf.putInt(fileLength);
 		addPadding(buf);
 		buf.flip();
 		return buf;
 	}
 
-	public static ByteBuffer middleMessage(String filename, String chunk) {
+	public static ByteBuffer middleMessage(String username, String filename, String chunk) {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(MIDDLE);
-		storeFilename(buf, filename);
+		storeString(buf, username);
+		storeString(buf, filename);
 		buf.putInt(chunk.length());
 		for (char c : chunk.toCharArray()) {
 			buf.putChar(c);
@@ -58,19 +68,21 @@ public class MessageProcessor {
 		return buf;
 	}
 
-	public static ByteBuffer finalMessage(String filename) {
+	public static ByteBuffer finalMessage(String username, String filename) {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(FINAL);
-		storeFilename(buf, filename);
+		storeString(buf, username);
+		storeString(buf, filename);
 		addPadding(buf);
 		buf.flip();
 		return buf;
 	}
 	
-	public static ByteBuffer requestMessage(String filename) {
+	public static ByteBuffer requestMessage(String username, String filename) {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(REQUEST);
-		storeFilename(buf, filename);
+		storeString(buf, username);
+		storeString(buf, filename);
 		addPadding(buf);
 		buf.flip();
 		return buf;
@@ -100,8 +112,18 @@ public class MessageProcessor {
 		return fileLength;
 	}
 
-	public static String getFilename(ByteBuffer msg) {
+	public static String getUsername(ByteBuffer msg) {
 		skipType(msg);
+		String username = new String();
+		int length = msg.getInt();
+		for (int i = 0; i < length; i++) {
+			username += msg.getChar();
+		}
+		msg.rewind();
+		return username;
+	}
+	public static String getFilename(ByteBuffer msg) {
+		skipUsername(msg);
 		String filename = new String();
 		int length = msg.getInt();
 		for (int i = 0; i < length; i++) {
