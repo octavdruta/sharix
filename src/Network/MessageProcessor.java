@@ -34,6 +34,7 @@ public class MessageProcessor {
 		buf.putInt(INITIAL);
 		storeFilename(buf, filename);
 		buf.putInt(fileLength);
+		buf.flip();
 		return buf;
 	}
 
@@ -45,6 +46,7 @@ public class MessageProcessor {
 		for (char c : chunk.toCharArray()) {
 			buf.putChar(c);
 		}
+		buf.flip();
 		return buf;
 	}
 
@@ -52,6 +54,7 @@ public class MessageProcessor {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(FINAL);
 		storeFilename(buf, filename);
+		buf.flip();
 		return buf;
 	}
 	
@@ -59,6 +62,7 @@ public class MessageProcessor {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(REQUEST);
 		storeFilename(buf, filename);
+		buf.flip();
 		return buf;
 	}
 
@@ -72,6 +76,7 @@ public class MessageProcessor {
 		for (int i = 0; i < length; i++) {
 			chunk += msg.getChar();
 		}
+		msg.rewind();
 		return chunk;
 	}
 
@@ -80,7 +85,9 @@ public class MessageProcessor {
 			return -1;
 		}
 		skipFilename(msg);
-		return msg.getInt();
+		int fileLength = msg.getInt();
+		msg.rewind();
+		return fileLength;
 	}
 
 	public static String getFilename(ByteBuffer msg) {
@@ -90,10 +97,13 @@ public class MessageProcessor {
 		for (int i = 0; i < length; i++) {
 			filename += msg.getChar();
 		}
+		msg.rewind();
 		return filename;
 	}
 
 	public static int getMessageType(ByteBuffer msg) {
-		return msg.getInt();
+		int messageType = msg.getInt();
+		msg.rewind();
+		return messageType;
 	}
 }

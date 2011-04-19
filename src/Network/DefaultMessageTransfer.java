@@ -26,9 +26,9 @@ public class DefaultMessageTransfer implements MessageTransfer{
 	ServerSocketChannel serverSocketChannel;
     HashMap<String, ConnectionData> connectedUsers;
     SharixMediator mediator;
-    
+
 	static ExecutorService pool = Executors.newFixedThreadPool(5);
-	
+
 	// Constructor.
 	public DefaultMessageTransfer(SharixMediator mediator) {
 		this.mediator = mediator;
@@ -37,13 +37,13 @@ public class DefaultMessageTransfer implements MessageTransfer{
 			System.out.println("Error: Could not initialize server.");
 		}
 	}
-	
+
 	// Initializes server and polling mechanism.
     private boolean initServer() {
     	User user = findUser(mediator.getMyUsername());
     	if (user == null)
     		return false;
-    	    	  	
+
     	try {
     		selector = Selector.open();
     		serverSocketChannel = ServerSocketChannel.open();
@@ -59,7 +59,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     	}
 		return true;
     }
-    
+
     // Returns user data for a given user name.
     private User findUser(String name) {
         Vector<User> users = mediator.getUserList();
@@ -70,7 +70,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
         }
         return null;
     }
-    
+
     // Connects to user identified by username.
     private boolean connectToUser(String name) {
     	if (isUserConnected(name))
@@ -90,7 +90,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
         	return false;
         }
         connectedUsers.put(name, conn);
-     
+
         return true;
     }
 
