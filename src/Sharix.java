@@ -1,17 +1,32 @@
-package src.Mediator;
+package src;
 
-import src.GUI.*;
-import java.util.*;
-import javax.swing.*;
+import java.util.List;
+import java.util.Random;
+import java.util.Vector;
 
-public class SharixMediatorMock {
-    private SharixGUI gui;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
-    public SharixMediatorMock() {
-        gui = new SharixGUI("eu");
-    }
+import src.GUI.SharixGUI;
+import src.Mediator.SharixMediator;
+import src.Network.SharixNetwork;
+import src.WebServiceClient.SharixWebServiceClientMock;
 
-    public void gogogo() {
+public class Sharix {
+	String username;
+	SharixGUI gui;
+	SharixNetwork network;
+	SharixWebServiceClientMock webserviceclient;
+	SharixMediator mediator;
+	
+	public Sharix(String username) {
+		mediator = new SharixMediator();
+		gui = new SharixGUI(mediator, "Sharix - " + username);
+		network = new SharixNetwork(mediator);
+		webserviceclient = new SharixWebServiceClientMock(mediator);
+	}
+	
+	public void buildGUI() {
         gui.buildGUI();
     }
 
@@ -20,18 +35,22 @@ public class SharixMediatorMock {
             (new ListWorker()).doInBackground();
         } catch(Exception e) {}
     }
-
-    public static void main(String[] args) {
-        final SharixMediatorMock mock = new SharixMediatorMock();
-        SwingUtilities.invokeLater(new Runnable() {
+    
+	public static void main(String[] args) {
+		if (args.length != 2) {
+			System.err.println("The program takes one parameter: the username.");
+			System.exit(-1);
+		}
+		final Sharix app = new Sharix(args[1]);
+		SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                mock.gogogo();
+                app.buildGUI();
             }
         });
-        mock.simulate();
-    }
+        app.simulate();
+	}
 
-    private class ListWorker extends SwingWorker<Void, Integer> {
+	private class ListWorker extends SwingWorker<Void, Integer> {
         public ListWorker() { }
 
         @Override
@@ -44,7 +63,7 @@ public class SharixMediatorMock {
                 try {
                     Thread.sleep(1000);
                 } catch(InterruptedException e) { }
-                gui.randomUpdateTransfers();
+                ((SharixGUI) gui).randomUpdateTransfers();
                 int val = rnd.nextInt(9);
                 if (val == 0 && !removeUser) {
                     publish(2);

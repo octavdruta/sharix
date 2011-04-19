@@ -2,6 +2,7 @@
 
 package src.GUI;
 
+import src.Mediator.SharixMediator;
 import src.SharixInterface.GUI;
 
 import java.awt.*;
@@ -24,10 +25,13 @@ public class SharixGUI extends JPanel implements GUI  {
     final int HORIZONTAL_SPLIT_POINT = 600;
     private String selectedUser;
     private String myself;
+    SharixMediator mediator;
 
     // myName represents the name of the person currently using the program.
-    public SharixGUI(String myName) {
+    public SharixGUI(SharixMediator mediator, String myName) {
         this.myself = myName;
+        this.mediator = mediator;
+        mediator.registerGUI(this);
         init();
     }
 
