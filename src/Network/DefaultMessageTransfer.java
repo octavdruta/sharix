@@ -29,7 +29,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     SharixMediator mediator;
     
 	static ExecutorService pool = Executors.newFixedThreadPool(5);
-	static final int BUFFER_SIZE = 1000;
+	static final int BUFFER_SIZE = 1024;
 	
 	// Constructor.
 	public DefaultMessageTransfer(SharixMediator mediator) {
@@ -73,6 +73,17 @@ public class DefaultMessageTransfer implements MessageTransfer{
         	}
         }
         return null;
+    }
+    
+    // Returns username for a certain <address, port> pair.
+    private String getUsername(String address, int port) {
+    	Vector<User> users = mediator.getUserList();
+        for (User u : users) {
+        	if (address.equals(u.getAddress()) && port == u.getPort()) {
+        		return u.getName();
+        	}
+        }
+        return null;    	
     }
     
     // Connects to user identified by username.
@@ -169,9 +180,20 @@ public class DefaultMessageTransfer implements MessageTransfer{
 		SocketChannel socketChannel = serverSocketChannel.accept(); 
 		socketChannel.configureBlocking(false);
 		socketChannel.register(key.selector(), SelectionKey.OP_READ);
-		// Connection is accepted, but it is not yet registered as ConnectionData.
-		// We need to wait for the name identification package and then register it.
-		// ParseReceivedBuffer is responsible for registering this to ConnectionData.
+		
+		String address = socketChannel.socket().getInetAddress().getHostAddress();
+		int port = socketChannel.socket().getPort();
+		
+		String username = getUsername(address, port);
+		if (username == null) {
+			System.out.println("Error: Accept failed. Username not found.");
+			return;
+		}
+		
+		ConnectionData conn = new ConnectionData();
+		conn.socketChannel = socketChannel;
+		connectedUsers.put(username, conn);
+		System.out.println("INFO: Accepted connection with user: " + username);
     }
     
     // This method is called when data is available on a certain channel.
@@ -179,6 +201,11 @@ public class DefaultMessageTransfer implements MessageTransfer{
 		pool.execute(new Runnable() {
 			public void run() {
 				SocketChannel socketChannel = (SocketChannel) key.channel();
+				
+				String address = socketChannel.socket().getInetAddress().getHostAddress();
+				int port = socketChannel.socket().getPort();
+				String username = getUsername(address, port);
+				
 				ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 				buffer.clear();
 				try {
@@ -194,7 +221,19 @@ public class DefaultMessageTransfer implements MessageTransfer{
 				// TODO: call method to process buffers.
 				// parseReceivedBuffer(username, buffer, key)  - this must be thread safe - async calls
 				// We need a way to decide when a certain connection must be removed from selector.
+				parseReceivedBuffer(username, buffer);
 			}
 		});
     }
+    
+    private void parseReceivedBuffer(String username, ByteBuffer buffer) {
+    	// if request to upload file
+    	// if initial download message. => open file
+    	// if middle message => append file
+    	// if final message => close file
+    
+    	
+    }
+    
+    
 }

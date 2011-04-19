@@ -2,6 +2,13 @@
 
 package src.Network;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import src.Mediator.SharixMediator;
 import src.SharixInterface.Network;
 
@@ -9,6 +16,9 @@ import src.SharixInterface.Network;
 public class SharixNetwork implements Network {
     SharixMediator mediator;
     MessageTransfer messageTransfer;
+    final static int BUFFER_SIZE = 1024;
+    
+    ExecutorService pool = Executors.newFixedThreadPool(5);
     
     public SharixNetwork(SharixMediator mediator) {
         this.mediator = mediator;
@@ -23,8 +33,35 @@ public class SharixNetwork implements Network {
     }
 
     // Initializes fname file upload.
-    public boolean uploadFile(String toUser, String fname) {
+    public boolean uploadFile(final String toUser, final String fname) {
         // initiates upload and reports progress via mediator.updateTransfer()
+    	pool.execute(new Runnable() {
+			public void run() {
+				String content = readFileAsString(fname);
+				ByteBuffer buffer = MessageProcessor.initialMessage(fname, content.length()));
+				messageTransfer.send(toUser, buffer);
+				int pos = 0;
+				int end = 0;
+				while (pos < content.length()) {
+					if (pos + BUFFER_SIZE <= content.length()) {
+						end = pos + BUFFER_SIZE;
+					} else {
+						end = content.length();
+					}
+					String chunk = content.substring(pos, end);
+					while (chunk.length() < BUFFER_SIZE) chunk.append(" ");
+					System.out.println("Sending to " + toUser + " file chunk " + pos);
+					pos = end;
+					buffer = MessageProcessor.middleMessage(fname, chunk);
+					messageTransfer.send(toUser, buffer);
+					
+		  	    }
+				buffer = MessageProcessor.finalMessage(fname);
+				messageTransfer.send(toUser, buffer);
+				// TODO: Update transfer
+			}
+    	});
+    	
         return true;
     }
 
@@ -37,4 +74,19 @@ public class SharixNetwork implements Network {
     public boolean abortUpload(String toUser, String fname) {
         return true;
     }
+    
+    private static String readFileAsString(String filePath) {
+    	try {
+    		byte[] buffer = new byte[(int) new File(filePath).length()];
+    		FileInputStream f = new FileInputStream(filePath);
+    		f.read(buffer);
+    		f.close();
+   	        return new String(buffer);
+    	} catch (IOException e) {
+    		System.out.println("Error: Could not read file.");
+    		return null;
+    	}
+    }
+
+    
 };
