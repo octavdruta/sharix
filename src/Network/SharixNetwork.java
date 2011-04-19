@@ -16,7 +16,7 @@ import src.SharixInterface.Network;
 public class SharixNetwork implements Network {
     SharixMediator mediator;
     MessageTransfer messageTransfer;
-    final static int BUFFER_SIZE = 1024;
+    final static int BUFFER_SIZE = 512;
     
     ExecutorService pool = Executors.newFixedThreadPool(5);
     
@@ -55,9 +55,6 @@ public class SharixNetwork implements Network {
 							end = content.length();
 						}
 						String chunk = content.substring(pos, end);
-						while (chunk.length() < BUFFER_SIZE) {
-							chunk.concat(" ");
-						}
 						System.out.println("Sending to " + toUser + " file chunk " + pos);
 						pos = end;
 						buffer = MessageProcessor.middleMessage(fname, chunk);
