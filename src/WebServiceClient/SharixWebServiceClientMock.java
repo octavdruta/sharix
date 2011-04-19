@@ -33,7 +33,7 @@ public class SharixWebServiceClientMock extends SharixWebServiceClient {
 						}
 					}
 					users.add(user);
-					System.out.println("Added user " + user.getName());
+					System.out.println("Added user " + user.getName() + ", " + user.getAddress() + ":" + user.getPort());
 					if (!username.equals(mediator.getMyUsername())) {
 						mediator.addUser(user.getName(), user.getFileList());
 					}
