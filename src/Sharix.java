@@ -20,7 +20,7 @@ public class Sharix {
 
 	public Sharix(String username, String configPath) {
 		mediator = new SharixMediator(username);
-		gui = new SharixGUI(mediator, username);
+		gui = new SharixGUI(mediator);
 		webserviceclient = new SharixWebServiceClientMock(mediator, configPath);
 		network = new SharixNetwork(mediator);
 	}

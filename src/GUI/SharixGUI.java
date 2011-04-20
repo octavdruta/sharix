@@ -24,12 +24,10 @@ public class SharixGUI extends JPanel implements GUI  {
     final int VERTICAL_SPLIT_POINT = 400;
     final int HORIZONTAL_SPLIT_POINT = 600;
     private String selectedUser;
-    private String myself;
     SharixMediator mediator;
 
     // myName represents the name of the person currently using the program.
-    public SharixGUI(SharixMediator mediator, String myName) {
-        this.myself = myName;
+    public SharixGUI(SharixMediator mediator) {
         this.mediator = mediator;
         mediator.registerGUI(this);
         init();

@@ -20,3 +20,15 @@ aceasta, la un interval random de 1-10 secunde, Andrei va iesi, iar Vlad se va
 loga. La apasarea pe un utilizator se va afisa lista sa de fisiere, iar la
 apasarea pe un fisier se va initia transferul. Daca utilizatorul iese in timpul
 transferului (ex: Andrei), statusul transferului respectiv va deveni "Aborted".
+
+
+
+
+
+Fiecare client joaca si rolul de server asteptand conexiuni noi. In momentul in care primeste o cerere de conexiune noua, o accepta si o introduce intr-un selector asteptand evenimente de read de la aceasta. 
+Atunci cand apare un read event pe o astfel de conexiune, citeste pachetul si in in functie de tipul acestuia ia una din urmatoarele actiuni :
+
+1. cerere de fisier => porneste un thread responsabil cu transferul unui fisier local catre un client inregistrat
+2. chunk receptionoare fisier => realizeaza managementul chunk-urilor de fisiere ce sunt in curs de download
+
+Operatiile de read de pe conexiune, trimitere fisier se realizeaza in threaduri diferite in cadrul unui executor service ce porneste maximum 5 thread-uri la un moment dat.

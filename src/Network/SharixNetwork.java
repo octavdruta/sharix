@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 
 import org.apache.log4j.Logger;
 

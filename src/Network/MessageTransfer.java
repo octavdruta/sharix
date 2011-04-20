@@ -196,8 +196,8 @@ public class MessageTransfer {
 
 		try {
 			while (buffer.hasRemaining()) {
-				int size;
-				if ((size = socketChannel.read(buffer)) < 0) {
+				int size = socketChannel.read(buffer);
+				if (size < 0) {
 					log.error("Protocol have lost consistency. Fatal!.");
 					System.exit(-1);
 				}
