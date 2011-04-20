@@ -1,34 +1,54 @@
-IDP - Tema 1
+IDP - Tema 2
 
 Echipa: Roboti
 Componenta: Andrei Soare
             Vlad Berteanu
 Grupa: 341C3
 
-Repository:
+Repository
+----------
 
-- codul proiectului se poate obtine prin clonarea :
+https://andreisoare@github.com/andreisoare/sharix.git
 
-    http://gitorious.org/sharix/sharix.git
+
+Instructiuni Folosire
+---------------------
 
 - compilare: ant compile
 - executie: ant run
 - clean: ant clean
-
-La incarcarea interfetei se vor loga 3 utilizatori: Andrei, Dan, Ion. Dupa
-aceasta, la un interval random de 1-10 secunde, Andrei va iesi, iar Vlad se va
-loga. La apasarea pe un utilizator se va afisa lista sa de fisiere, iar la
-apasarea pe un fisier se va initia transferul. Daca utilizatorul iese in timpul
-transferului (ex: Andrei), statusul transferului respectiv va deveni "Aborted".
+- testare: ./test.sh (va lansa in executie 3 instante pentru cei 3 utilizatori)
 
 
+Organizarea Fisierelor
+----------------------
+
+- build/     -> aici se stocheaza binarele dupa compilare
+- config/    -> aici sunt detaliile si fisierele utilizatorilor din sistem
+- downloads/ -> aici se stocheaza fisierele downloadate de la alti utilizatori
+- lib/       -> bibliotecile de care depinde proiectul (log4j)
+- logs/      -> aici se stocheaza fisierele de log
+- src/       -> toate sursele proiectului
 
 
+Detalii Implementare
+--------------------
 
-Fiecare client joaca si rolul de server asteptand conexiuni noi. In momentul in care primeste o cerere de conexiune noua, o accepta si o introduce intr-un selector asteptand evenimente de read de la aceasta. 
-Atunci cand apare un read event pe o astfel de conexiune, citeste pachetul si in in functie de tipul acestuia ia una din urmatoarele actiuni :
+Fiecare client joaca si rolul de server asteptand conexiuni noi. In momentul in
+care primeste o cerere de conexiune noua, o accepta si o introduce intr-un
+selector asteptand evenimente de read de la aceasta.
 
-1. cerere de fisier => porneste un thread responsabil cu transferul unui fisier local catre un client inregistrat
-2. chunk receptionoare fisier => realizeaza managementul chunk-urilor de fisiere ce sunt in curs de download
+Atunci cand apare un read event pe o astfel de conexiune, citeste pachetul si
+in functie de tipul acestuia ia una din urmatoarele actiuni:
 
-Operatiile de read de pe conexiune, trimitere fisier se realizeaza in threaduri diferite in cadrul unui executor service ce porneste maximum 5 thread-uri la un moment dat.
+- cerere de fisier => porneste un thread responsabil cu transferul unui fisier
+                      local catre un client inregistrat
+- chunk receptionoare fisier => realizeaza managementul chunk-urilor de fisiere
+                                ce sunt in curs de download
+
+Operatiile de read de pe conexiune si de trimitere fisier se realizeaza in
+threaduri diferite in cadrul unui executor service ce porneste maximum 5
+thread-uri la un moment dat.
+
+Pachetele trimise intre utilizatori se codifica / decodifica prin clasa
+MessageProcessor printr-un set de functii independente de stare.

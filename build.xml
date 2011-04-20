@@ -12,7 +12,7 @@
 
     <target name="compile">
         <javac srcdir="${src.dir}" destdir="${build.dir}">
-            <classpath path="log4j-1.2.16.jar"/>
+            <classpath path="lib/log4j-1.2.16.jar"/>
         </javac>
     </target>
 
@@ -21,7 +21,7 @@
             <classpath>
                 <pathelement location="${build.dir}" />
             </classpath>
-            <classpath path="log4j-1.2.16.jar"/>
+            <classpath path="lib/log4j-1.2.16.jar"/>
             <classpath path="."/>
             <arg value="andrei" />
         </java>
