@@ -29,7 +29,7 @@ public class SharixNetwork implements Network {
     public SharixNetwork(SharixMediator mediator) {
         this.mediator = mediator;
         mediator.registerNetwork(this);
-        messageTransfer = new DefaultMessageTransfer(mediator);
+        messageTransfer = new MessageTransfer(mediator);
     }
 
     // Initializes fname file download.
