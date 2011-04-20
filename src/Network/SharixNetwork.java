@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
+import org.apache.log4j.Logger;
+
 import src.Mediator.SharixMediator;
 import src.SharixInterface.Network;
 
@@ -20,10 +22,10 @@ public class SharixNetwork implements Network {
     MessageTransfer messageTransfer;
     final static int BUFFER_SIZE = 100;
     HashSet<String> requestPoll = new HashSet<String>();
-
-    
+    static Logger log = Logger.getLogger("SharixNetwork ");
     ExecutorService pool = Executors.newFixedThreadPool(5);
     
+    // Constructor.
     public SharixNetwork(SharixMediator mediator) {
         this.mediator = mediator;
         mediator.registerNetwork(this);
@@ -37,11 +39,12 @@ public class SharixNetwork implements Network {
     		return false;    		
     	}
     	requestPoll.add(task);
-    	System.out.println("Request to download " + fname + " from user " + fromUser);
+    	log.info("Request to download " + fname + " from user " + fromUser);
     	try {
-    		messageTransfer.send(fromUser, MessageProcessor.requestMessage(mediator.getMyUsername(), fname));
+    		messageTransfer.send(fromUser, MessageProcessor.requestMessage(
+				mediator.getMyUsername(), fname));
     	} catch (IOException e) {
-			System.out.println("Error: Sending request for file " + fname);
+			log.error("Could not send request for file " + fname);
 			return false;
 		}
         return true;
@@ -49,12 +52,15 @@ public class SharixNetwork implements Network {
 
     // Initializes fname file upload.
     public boolean uploadFile(final String toUser, final String fname) {
-    	System.out.println("Starting thread to upload file " + fname + " to " + toUser);
+    	log.info("Starting thread to upload file " + fname + " to " + toUser);
     	pool.execute(new Runnable() {
 			public void run() {
 				try {
 					byte[] content = readFileAsString(fname);
-					ByteBuffer buffer = MessageProcessor.initialMessage(mediator.getMyUsername(), fname, content.length);
+
+					ByteBuffer buffer = MessageProcessor.initialMessage(
+						mediator.getMyUsername(), fname, content.length);
+
 					messageTransfer.send(toUser, buffer);
 					int pos = 0;
 					int end = 0;
@@ -68,21 +74,42 @@ public class SharixNetwork implements Network {
 						for (int i = pos; i < end; ++i) {
 							chunk[i - pos] = content[i];
 						}
-						System.out.println("Sending to " + toUser + " file chunk " + pos);
+						log.info("Sending to " + toUser + " file chunk " + pos);
 						pos = end;
-						buffer = MessageProcessor.middleMessage(mediator.getMyUsername(), fname, chunk);
+
+						buffer = MessageProcessor.middleMessage(
+							mediator.getMyUsername(), fname, chunk);
+
 						messageTransfer.send(toUser, buffer);
 					}
-					buffer = MessageProcessor.finalMessage(mediator.getMyUsername(), fname);
+
+					buffer = MessageProcessor.finalMessage(
+						mediator.getMyUsername(), fname);
+
 					messageTransfer.send(toUser, buffer);
-					// TODO: Update transfer
 				} catch (IOException e) {
-					System.out.println("Error: Upload File failed.");
+					log.error("Upload file failed.");
 					e.printStackTrace();
 				}
 			}
     	});
     	return true;
+    }
+
+   // Read file content as byte stream.
+    private byte[] readFileAsString(String filePath) {
+    	filePath = "config/" + mediator.getMyUsername() + "/" + filePath; 
+    	try {
+    		byte[] buffer = new byte[(int) new File(filePath).length()];
+    		FileInputStream f = new FileInputStream(filePath);
+    		f.read(buffer);
+    		f.close();
+   	        return buffer;
+    	} catch (IOException e) {
+    		log.error("Could not read file.");
+    		System.exit(-1);
+    	}
+        return null;
     }
 
     // Aborts fname file download.
@@ -94,22 +121,4 @@ public class SharixNetwork implements Network {
     public boolean abortUpload(String toUser, String fname) {
         return true;
     }
-    
-    private byte[] readFileAsString(String filePath) {
-    	filePath = "config/" + mediator.getMyUsername() + "/" + filePath; 
-    	try {
-    		byte[] buffer = new byte[(int) new File(filePath).length()];
-    		FileInputStream f = new FileInputStream(filePath);
-    		f.read(buffer);
-    		f.close();
-   	        return buffer;
-    	} catch (IOException e) {
-    		System.out.println("Error: Could not read file.");
-    		System.exit(-1);
-    	}
-        return null;
-    }
-
-
-    
 };

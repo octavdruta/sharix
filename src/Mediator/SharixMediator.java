@@ -11,6 +11,8 @@ import src.SharixInterface.WebServiceClient;
 import src.SharixInterface.User;
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 public class SharixMediator implements NetworkMediator, GUIMediator, WebServiceClientMediator {
 	Network network;
 	GUI gui;
