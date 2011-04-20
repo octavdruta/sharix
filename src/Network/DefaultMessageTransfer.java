@@ -50,11 +50,28 @@ public class DefaultMessageTransfer implements MessageTransfer{
 		}
 	}
 
+    private void wakeUpThread() {
+    	pool.execute(new Runnable() {
+    		public void run() {
+    			while (true) {
+    				try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+    				selector.wakeup();
+    			}
+    		}
+    	});
+    }
 	// Initializes server and polling mechanism.
     private boolean initServer() {
     	User user = findUser(mediator.getMyUsername());
     	if (user == null)
     		return false;
+    	
+    	wakeUpThread();
 
     	try {
     		selector = Selector.open();
@@ -108,7 +125,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
         connectedUsers.put(name, conn);
        
         try {
-			conn.socketChannel.register(selector, SelectionKey.OP_WRITE);
+			conn.socketChannel.register(selector, SelectionKey.OP_READ);
 		} catch (ClosedChannelException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -172,7 +189,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			return false;
     		conn = connectedUsers.get(username);
     	}
-        	
+        
     	while (buffer.hasRemaining()) {
     		if (conn.socketChannel.write(buffer) <= 0) {
     			System.out.println("Error: Protocol lost consistency while writing data.");
