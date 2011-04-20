@@ -165,7 +165,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     					Iterator<SelectionKey> it = selector.selectedKeys().iterator();
     					while (it.hasNext()) {
     						SelectionKey key = it.next();
-    						it.remove();
+       						it.remove();
     						if (key.isAcceptable())
     							accept(key);
     						else if (key.isReadable())
@@ -189,9 +189,10 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			return false;
     		conn = connectedUsers.get(username);
     	}
+        System.out.println("Sending type: " + MessageProcessor.getMessageType(buffer) );
         
     	while (buffer.hasRemaining()) {
-    		if (conn.socketChannel.write(buffer) <= 0) {
+    		if (conn.socketChannel.write(buffer) < 0) {
     			System.out.println("Error - Send: Protocol lost consistency while writing data.");
     			return false;
     		}
@@ -206,7 +207,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
 
 		SocketChannel socketChannel = serverSocketChannel.accept(); 
 		socketChannel.configureBlocking(false);
-		socketChannel.register(key.selector(), SelectionKey.OP_READ);
+		
 		
 		ByteBuffer buffer = ByteBuffer.allocate(MessageProcessor.BUFFER_SIZE);
 		buffer.clear();
@@ -215,7 +216,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
 			while (buffer.hasRemaining()) {
 				System.out.println(buffer.hasRemaining());
 				int size;
-				if ((size = socketChannel.read(buffer)) <= 0) {
+				if ((size = socketChannel.read(buffer)) < 0) {
 					System.out.println("ERROR - Accept: Protocol lost consistency.");
 					System.exit(-1);
 				}
@@ -231,10 +232,12 @@ public class DefaultMessageTransfer implements MessageTransfer{
 		ConnectionData conn = new ConnectionData();
 		conn.socketChannel = socketChannel;
 		connectedUsers.put(username, conn);
+		socketChannel.register(key.selector(), SelectionKey.OP_READ);
     }
     
     // This method is called when data is available on a certain channel.
     private void read(final SelectionKey key) throws IOException {
+    	key.interestOps(0);
 		pool.execute(new Runnable() {
 			public void run() {
 				SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -243,6 +246,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
 
 				try {
 					while (buffer.hasRemaining()) {
+						
 						if (socketChannel.read(buffer) <= 0) {
 							System.out.println("ERROR - Read: Protocol lost consistency.");
 							System.exit(-1);
@@ -254,6 +258,8 @@ public class DefaultMessageTransfer implements MessageTransfer{
 				}
 
 				parseReceivedBuffer(buffer);
+				key.interestOps(SelectionKey.OP_READ);
+				key.selector().wakeup();
 			}
 		});
     }
@@ -282,7 +288,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     		
     		case MessageProcessor.INITIAL:
     			try {
-    				System.out.println("Sending initial from " + fname + " to user " + username);
+    				System.out.println("Receiving initial package for " + fname);
     				output = new DataOutputStream(new FileOutputStream(fname));
     				fdata = new FileData();
     				fdata.stream = output;
@@ -296,7 +302,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			break;
     			
     		case MessageProcessor.MIDDLE:
-    			System.out.println("Sending chunk from " + fname + " to user " + username);
+    			System.out.println("Receiving chunk package for " + fname);
     			conn = connectedUsers.get(username);
     			chunk = MessageProcessor.getChunk(buffer);
     			fdata = conn.download.get(fname);
@@ -310,7 +316,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			break;
     		
     		case MessageProcessor.FINAL:
-    			System.out.println("Sending final from " + fname + " to user " + username);
+    			System.out.println("Receiving final package for " + fname);
     			conn = connectedUsers.get(username);
     			fdata = conn.download.get(fname);
     			try {

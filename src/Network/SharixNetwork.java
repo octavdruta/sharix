@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,6 +18,7 @@ public class SharixNetwork implements Network {
     SharixMediator mediator;
     MessageTransfer messageTransfer;
     final static int BUFFER_SIZE = 512;
+    HashSet<String> requestPoll = new HashSet<String>();
     
     ExecutorService pool = Executors.newFixedThreadPool(5);
     
@@ -28,6 +30,11 @@ public class SharixNetwork implements Network {
 
     // Initializes fname file download.
     public boolean downloadFile(String fromUser, String fname) {
+    	String task = fromUser + fname;
+    	if (requestPoll.contains(task)) {
+    		return false;    		
+    	}
+    	requestPoll.add(task);
     	System.out.println("Request to download " + fname + " from user " + fromUser);
     	try {
     		messageTransfer.send(fromUser, MessageProcessor.requestMessage(mediator.getMyUsername(), fname));
