@@ -5,25 +5,44 @@
 
     <property name="src.dir" value="src" />
     <property name="build.dir" value="build" />
+    <property name="logs.dir" value="logs" />
+    <property name="downloads.dir" value="downloads" />
 
     <!-- Targets -->
 
     <target name="compile">
-        <mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}">
+            <classpath path="log4j-1.2.16.jar"/>
+        </javac>
     </target>
 
     <target name="run" depends="compile">
-        <java classname="Mediator/SharixMediatorMock" fork="true">
+        <java classname="src/Sharix" fork="true">
             <classpath>
                 <pathelement location="${build.dir}" />
             </classpath>
-            <arg value="ANT_RULZ" />
+            <classpath path="log4j-1.2.16.jar"/>
+            <classpath path="."/>
+            <arg value="andrei" />
         </java>
     </target>
 
     <target name="clean">
-        <delete dir="${build.dir}" />
+        <delete includeemptydirs="true">
+            <fileset dir="${build.dir}"
+                     includes="**/*"
+                     excludes="**/.*"/>
+        </delete>
+        <delete includeemptydirs="true">
+            <fileset dir="${logs.dir}"
+                     includes="**/*"
+                     excludes="**/.*"/>
+        </delete>
+        <delete includeemptydirs="true">
+            <fileset dir="${downloads.dir}"
+                     includes="**/*"
+                     excludes="**/.*"/>
+        </delete>
     </target>
 
 </project>
