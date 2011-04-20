@@ -53,7 +53,7 @@ public class MessageProcessor {
 		buf.flip();
 		return buf;
 	}
-
+/*
 	public static ByteBuffer middleMessage(String username, String filename, String chunk) {
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
 		buf.putInt(MIDDLE);
@@ -62,6 +62,20 @@ public class MessageProcessor {
 		buf.putInt(chunk.length());
 		for (char c : chunk.toCharArray()) {
 			buf.putChar(c);
+		}
+		addPadding(buf);
+		buf.flip();
+		return buf;
+	}
+	*/
+	public static ByteBuffer middleMessage(String username, String filename, byte[] chunk) {
+		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE);
+		buf.putInt(MIDDLE);
+		storeString(buf, username);
+		storeString(buf, filename);
+		buf.putInt(chunk.length);
+		for (byte c : chunk) {
+			buf.put(c);
 		}
 		addPadding(buf);
 		buf.flip();
@@ -87,7 +101,7 @@ public class MessageProcessor {
 		buf.flip();
 		return buf;
 	}
-
+/*
 	public static String getChunk(ByteBuffer msg) {
 		if (getMessageType(msg) != MIDDLE) {
 			return null;
@@ -97,6 +111,20 @@ public class MessageProcessor {
 		int length = msg.getInt();
 		for (int i = 0; i < length; i++) {
 			chunk += msg.getChar();
+		}
+		msg.rewind();
+		return chunk;
+	}
+	*/
+	public static byte[] getByteChunk(ByteBuffer msg) {
+		if (getMessageType(msg) != MIDDLE) {
+			return null;
+		}
+		skipFilename(msg);
+		int length = msg.getInt();
+		byte[] chunk = new byte[length];
+		for (int i = 0; i < length; i++) {
+			chunk[i] = msg.get();
 		}
 		msg.rewind();
 		return chunk;

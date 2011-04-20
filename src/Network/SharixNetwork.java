@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import src.Mediator.SharixMediator;
 import src.SharixInterface.Network;
@@ -17,8 +18,9 @@ import src.SharixInterface.Network;
 public class SharixNetwork implements Network {
     SharixMediator mediator;
     MessageTransfer messageTransfer;
-    final static int BUFFER_SIZE = 512;
+    final static int BUFFER_SIZE = 100;
     HashSet<String> requestPoll = new HashSet<String>();
+
     
     ExecutorService pool = Executors.newFixedThreadPool(5);
     
@@ -51,18 +53,21 @@ public class SharixNetwork implements Network {
     	pool.execute(new Runnable() {
 			public void run() {
 				try {
-					String content = readFileAsString(fname);
-					ByteBuffer buffer = MessageProcessor.initialMessage(mediator.getMyUsername(), fname, content.length());
+					byte[] content = readFileAsString(fname);
+					ByteBuffer buffer = MessageProcessor.initialMessage(mediator.getMyUsername(), fname, content.length);
 					messageTransfer.send(toUser, buffer);
 					int pos = 0;
 					int end = 0;
-					while (pos < content.length()) {
-						if (pos + BUFFER_SIZE <= content.length()) {
+					while (pos < content.length) {
+						if (pos + BUFFER_SIZE <= content.length) {
 							end = pos + BUFFER_SIZE;
 						} else {
-							end = content.length();
+							end = content.length;
 						}
-						String chunk = content.substring(pos, end);
+						byte[] chunk = new byte[end - pos];
+						for (int i = pos; i < end; ++i) {
+							chunk[i - pos] = content[i];
+						}
 						System.out.println("Sending to " + toUser + " file chunk " + pos);
 						pos = end;
 						buffer = MessageProcessor.middleMessage(mediator.getMyUsername(), fname, chunk);
@@ -73,6 +78,7 @@ public class SharixNetwork implements Network {
 					// TODO: Update transfer
 				} catch (IOException e) {
 					System.out.println("Error: Upload File failed.");
+					e.printStackTrace();
 				}
 			}
     	});
@@ -89,14 +95,14 @@ public class SharixNetwork implements Network {
         return true;
     }
     
-    private String readFileAsString(String filePath) {
+    private byte[] readFileAsString(String filePath) {
     	filePath = "config/" + mediator.getMyUsername() + "/" + filePath; 
     	try {
     		byte[] buffer = new byte[(int) new File(filePath).length()];
     		FileInputStream f = new FileInputStream(filePath);
     		f.read(buffer);
     		f.close();
-   	        return new String(buffer);
+   	        return buffer;
     	} catch (IOException e) {
     		System.out.println("Error: Could not read file.");
     		System.exit(-1);

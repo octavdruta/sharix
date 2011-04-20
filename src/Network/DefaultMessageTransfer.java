@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import src.Mediator.SharixMediator;
 import src.SharixInterface.User;
@@ -38,7 +39,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     HashMap<String, ConnectionData> connectedUsers;
     SharixMediator mediator;
     HashSet<String> uploadTasks = new HashSet<String>();
-
+    
 	ExecutorService pool = Executors.newFixedThreadPool(5);
 
 	// Constructor.
@@ -182,11 +183,13 @@ public class DefaultMessageTransfer implements MessageTransfer{
     }
     
     // Transfers buffer data to a given user via channels.
-    public boolean send(String username, ByteBuffer buffer) throws IOException {
+    public synchronized boolean send(String username, ByteBuffer buffer) throws IOException {
+
     	ConnectionData conn = connectedUsers.get(username);
     	if (conn == null) {
-    		if (!connectToUser(username))
-    			return false;
+    		if (!connectToUser(username)) {
+    			return false;    			
+    		}
     		conn = connectedUsers.get(username);
     	}
         System.out.println("Sending type: " + MessageProcessor.getMessageType(buffer) );
@@ -197,6 +200,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			return false;
     		}
     	}
+
     	return true;    	
     }
     
@@ -240,6 +244,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
     	key.interestOps(0);
 		pool.execute(new Runnable() {
 			public void run() {
+
 				SocketChannel socketChannel = (SocketChannel) key.channel();
 				ByteBuffer buffer = ByteBuffer.allocate(MessageProcessor.BUFFER_SIZE);
 				buffer.clear();
@@ -266,13 +271,17 @@ public class DefaultMessageTransfer implements MessageTransfer{
     
     private synchronized void parseReceivedBuffer(ByteBuffer buffer) {
 		buffer.flip();
+		System.out.println(buffer);
+		System.out.println(buffer.getInt());
+		System.out.println(buffer.getInt());
+		buffer.rewind();
 		String username = MessageProcessor.getUsername(buffer);
     	int type = MessageProcessor.getMessageType(buffer);
     	String fname = MessageProcessor.getFilename(buffer);
     	ConnectionData conn;
     	DataOutputStream output;
     	FileData fdata;
-    	String chunk;
+    	byte[] chunk;
     	
     	switch (type) {
     		
@@ -304,11 +313,13 @@ public class DefaultMessageTransfer implements MessageTransfer{
     		case MessageProcessor.MIDDLE:
     			System.out.println("Receiving chunk package for " + fname);
     			conn = connectedUsers.get(username);
-    			chunk = MessageProcessor.getChunk(buffer);
+    			chunk = MessageProcessor.getByteChunk(buffer);
     			fdata = conn.download.get(fname);
-    			fdata.currentSize += chunk.length();
+    			fdata.currentSize += chunk.length;
+    			int progress = 100 - 100 * (fdata.totalSize - fdata.currentSize) / fdata.totalSize;
     			try {
-    				fdata.stream.writeBytes(chunk);
+    				fdata.stream.write(chunk);
+    				mediator.updateTransfer(username, mediator.getMyUsername(), fname, "Receiving", progress);
     				// TODO: update transfer.
     			} catch (IOException e) {
     				System.out.println("Error: Could not append chunk to file.");
@@ -326,7 +337,9 @@ public class DefaultMessageTransfer implements MessageTransfer{
     			} catch (IOException e) {
     				System.out.println("Error: Could not close file.");
     			}
+				mediator.updateTransfer(username, mediator.getMyUsername(), fname, "Completed", 100);
     			break;
     	}
+
     }
 }

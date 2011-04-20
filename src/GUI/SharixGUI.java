@@ -45,8 +45,6 @@ public class SharixGUI extends JPanel implements GUI  {
                 String s = (String)fileList.getSelectedValue();
                 if (s != null) {
                 	mediator.downloadFile(selectedUser, s);
-                    updateTransfer(selectedUser, myself, s, "Receiving...",
-                                   new Integer(0));
                 }
             }
         });
