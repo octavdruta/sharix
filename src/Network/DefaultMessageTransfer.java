@@ -192,7 +192,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
         
     	while (buffer.hasRemaining()) {
     		if (conn.socketChannel.write(buffer) <= 0) {
-    			System.out.println("Error: Protocol lost consistency while writing data.");
+    			System.out.println("Error - Send: Protocol lost consistency while writing data.");
     			return false;
     		}
     	}
@@ -216,12 +216,12 @@ public class DefaultMessageTransfer implements MessageTransfer{
 				System.out.println(buffer.hasRemaining());
 				int size;
 				if ((size = socketChannel.read(buffer)) <= 0) {
-					System.out.println("ERROR: Protocol lost consistency.");
+					System.out.println("ERROR - Accept: Protocol lost consistency.");
 					System.exit(-1);
 				}
 			}					
 		} catch (IOException e) {
-			System.out.print("Error: Could not read data from channel.");
+			System.out.print("Error - Accept: Could not read data from channel.");
 			e.printStackTrace();
 		}
 		buffer.flip();
@@ -244,7 +244,7 @@ public class DefaultMessageTransfer implements MessageTransfer{
 				try {
 					while (buffer.hasRemaining()) {
 						if (socketChannel.read(buffer) <= 0) {
-							System.out.println("ERROR: Protocol lost consistency.");
+							System.out.println("ERROR - Read: Protocol lost consistency.");
 							System.exit(-1);
 						}
 					}					
