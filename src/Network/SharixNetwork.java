@@ -52,7 +52,7 @@ public class SharixNetwork implements Network {
     // Initializes fname file upload.
     public boolean uploadFile(final String toUser, final String fname) {
     	log.info("Starting thread to upload file " + fname + " to " + toUser);
-    	pool.execute(new Runnable() {
+		pool.execute(new Runnable() {
 			public void run() {
 				try {
 					byte[] content = readFileAsString(fname);
@@ -74,6 +74,13 @@ public class SharixNetwork implements Network {
 							chunk[i - pos] = content[i];
 						}
 						log.info("Sending to " + toUser + " file chunk " + pos);
+
+						int progress = 100 - 100 *
+							(content.length - end) / content.length;
+
+						mediator.updateTransfer(mediator.getMyUsername(),
+							toUser, fname, "Uploading", progress);
+
 						pos = end;
 
 						buffer = MessageProcessor.middleMessage(
@@ -86,6 +93,11 @@ public class SharixNetwork implements Network {
 						mediator.getMyUsername(), fname);
 
 					messageTransfer.send(toUser, buffer);
+
+					mediator.updateTransfer(mediator.getMyUsername(), toUser,
+							fname, "Completed", 100);
+
+
 				} catch (IOException e) {
 					log.error("Upload file failed.");
 					e.printStackTrace();

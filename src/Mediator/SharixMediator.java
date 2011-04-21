@@ -68,7 +68,7 @@ public class SharixMediator implements NetworkMediator, GUIMediator, WebServiceC
 
 	// Updates file transfer status.
 	@Override
-	public void updateTransfer(String fromUser, String toUser, String file,
+	public synchronized void updateTransfer(String fromUser, String toUser, String file,
 			String status, Integer progress) {
 		gui.updateTransfer(fromUser, toUser, file, status, progress);
 	}
